@@ -1,0 +1,15 @@
+<a href="<?= "dashboard.php?username=" . urlencode($username) ?>" >
+    <section id="user_tile" class="group relative overflow-hidden rounded-lg">
+        <div class="text-2xl text-gray-800 dark:text-white bg-white/55 dark:bg-black/35 backdrop-blur-3xl border border-gray-500 rounded-lg px-6 py-3 grid shadow-lg hover:border-purple-500 transition-all duration-300 ease-in-out z-20 hover:border-l-pink-300">
+            <div class="whitespace-normal break-all max-w-[250px]">
+                <h1 class="text-sm" > Username: <?= $username ?> </h1>
+                <h4 class="text-sm"> Email: <?= $email ?> </h4>
+            </div>
+        </div>
+        <!-- dark hover effect -->
+        <div class="absolute hidden dark:block bottom-0 -translate-x-18 translate-y-18 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-500 ease-out p-10 rounded-full bg-gradient-to-tr from-purple-500 via-pink-500 to-yellow-300  blur-lg dark:blur-md -z-10"></div>
+        <!-- Light hover effect -->
+        <div class="absolute dark:hidden inset-0 -translate-x-18 translate-y-34 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-500 ease-out bg-gradient-to-tr from-purple-600 via-pink-500 to-yellow-300 blur-sm -z-10"></div>
+
+    </section>
+</a>

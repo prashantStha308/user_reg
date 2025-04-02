@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+body{
+    @apply bg-gray-50 dark:bg-gray-900;
+}
+
+.list-text{
+    @apply md:p-4 py-3 px-0 block hover:text-purple-500 transition-all duration-100 ease-in-out;
+}
+
+.login-inputs{
+    @apply w-full text-gray-800 dark:text-gray-50 text-sm border border-gray-300 px-4 py-3 rounded-md outline-purple-600;
+}
+
+.signup-inputs{
+    @apply bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500;
+}
