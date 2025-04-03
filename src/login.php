@@ -1,21 +1,23 @@
 <?php
+        require_once "./_utils/config.php";
+        require_once "./_utils/helper.php";
+
     if( $_SERVER['REQUEST_METHOD'] == 'POST' ) {
         $email = $_POST['email'];
         $password = $_POST['password'];
 
         if( auth_user( $email , $password ) ){
             session_regenerate_id(true);
-            header("Location: dashboard.php?username=" . $_SESSION['username']);
+            header("Location: dashboard.php?username=" . urlencode($_SESSION['username']));
             exit;
         }else{
-            $error_message = "Invalid email or password";
-            echo $error_message;
+            $_SESSION['error'] = "Invalid email or password";
         }
     }
 
     function auth_user( $email , $password ){
         try{
-            $db = new PDO( "mysql:host=localhost;dbname=user_management" , "root" , "0308" );
+            $db = new PDO( "mysql:host=localhost;dbname=user_management" , USER , PASSWORD );
 
             $query = $db->prepare("SELECT * FROM users WHERE email = :email ");
             $query->bindParam( ":email" , $email );
@@ -28,6 +30,7 @@
                 session_start();
                 $_SESSION['email'] = $user['email'];
                 $_SESSION['username'] = $user['username'];
+                $_SESSION['user_id'] = $user['user_id'];
                 $_SESSION['last_activity'] = time();
                 return true;
             } else {
@@ -68,6 +71,12 @@
                         <?php endif; ?>
                         <!-- Form -->
                         <form class="mt-8 space-y-4" action="login.php" method="POST">
+                            <?php if( isset($_SESSION['username']) && !empty($_SESSION['username']) ): ?>
+                                <div class="" >
+                                    <h3 class="text-left text-xs md:text-sm xl:text-lg text-black dark:text-gray-400"> Currently logged in as : <span class="text-purple-400 font-bold hover:text-pink-500 transition-all duration-150 ease-in-out"> <?= $_SESSION['username'] ?> </span> </h3>
+                                </div>
+                            <?php endif ?>
+                            <?php if (!empty($_SESSION['error'])) { echo "<p class='text-red-500'>{$_SESSION['error']}</p>"; } ?>
 
                             <!-- Email -->
                             <div>
@@ -96,17 +105,17 @@
                             <div class="flex flex-wrap items-center justify-between gap-4">
                                 <!-- Remember me? -->
                                 <div class="flex items-center">
-                                    <input id="remember-me" name="remember-me" type="checkbox" class="h-4 w-4 shrink-0 text-purple-600 focus:ring-purple-500 border-gray-300 rounded" />
+                                    <!-- <input id="remember-me" name="remember-me" type="checkbox" class="h-4 w-4 shrink-0 text-purple-600 focus:ring-purple-500 border-gray-300 rounded" />
                                     <label for="remember-me" class="ml-3 block text-sm text-gray-800 dark:text-white">
                                         Remember me
-                                    </label>
+                                    </label> -->
                                 </div>
 
                                 <!-- Forget Your Password? -->
                                 <div class="text-sm">
-                                    <a href="#home" class="text-purple-600 hover:underline font-semibold">
+                                    <!-- <a href="#home" class="text-purple-600 hover:underline font-semibold">
                                         Forgot your password?
-                                    </a>
+                                    </a> -->
                                 </div>
                             </div>
 

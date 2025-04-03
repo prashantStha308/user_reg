@@ -8,6 +8,52 @@
         $query->bindValue( $param , $value );
     }
 
+    function validate_form( $username , $email , $password = "__registered_password" ){
+        try{
+            if( empty($username) || empty($email) ){
+                throw new Exception("Required Fields missing");
+            }
+            if( $password !== "__registered_password" && empty($password) ){
+                throw new Exception("Required Fields missing");
+            }
+            return true;
+        }catch( Exception $e ){
+            echo "Error encountered: " . $e->getMessage();
+            return false;
+        }
+    }
+
+    function create_user( $username , $email , $password ){
+        try{
+            // make a pdo
+            $db = new pdo( 'mysql:host=localhost;dbname=user_management' , USER , PASSWORD );
+            // enable error handeling
+            $db->setAttribute( PDO::ATTR_ERRMODE , PDO::ERRMODE_EXCEPTION );
+
+            $checkQuery = $db->prepare("SELECT email FROM users WHERE email = :email LIMIT 1");
+            bind_param( $checkQuery , ":email" , $email );
+            $checkQuery->execute();
+            $emailExist = $checkQuery->fetchColumn();
+
+            if( $emailExist){
+                $_SESSION['error'] = "Email already exists. Please use a different email.";
+                return false;
+            }
+
+            $hashed_password = password_hash($password , PASSWORD_DEFAULT);
+
+            $query = $db->prepare("INSERT INTO users( username , email , password ) VALUES ( :username , :email , :password )");
+            bind_param( $query , ":username" , $username );
+            bind_param( $query , ":email" , $email );
+            bind_param( $query , ":password" , $hashed_password );
+            $query->execute();
+            return true;
+        }catch( PDOException $e ){
+            echo "Error: " . $e->getMessage();
+            return false;
+        }
+    }
+
     function get_user($username = null, $limit = 10, $page = 1) {
         global $db;
         try {
@@ -38,40 +84,43 @@
         }
     }
 
-    function auth_current( $username ){
-        try{
-            if( isset($_SESSION['username']) && $_SESSION['username'] == $username  ){
-                return true;
-            }else{
-                throw new Exception("You are not the owner");
-            }
-            
-        }catch( Exception $e){
-            echo "Error: " . $e->getMessage();
-            return false;
-        }
+    function auth_current($username) {
+        return isset($_SESSION['username']) && $username && $_SESSION['username'] === $username;
     }
 
-    function update_user( $key , $value ){
+    function update_user($username, $email, $description) {
         global $db;
-        try{
-            // Validate the column name to prevent SQL injection
-            $allowed_columns = ['username', 'email', 'password'];
-            if (!in_array($key, $allowed_columns)) {
-                throw new Exception("Invalid column name.");
-            }
-
-            $query = $db->prepare("UPDATE user SET {$key} :updateValue WHERE username = :uName");
-            bind_param( $query , ":updateValue" , $value );
-            bind_param( $query , ":uName" , $_SESSION['username'] );
+        try {
+            // Prepare the update query
+            $query = $db->prepare("UPDATE users SET username = :username, email = :email, description = :description WHERE user_id = :userId");
             
-            if( $query->execute() ){
-                return true;
-            }else{
-                throw new Exception("Execution Failed!!");
+            // Verify user_id exists
+            if (!isset($_SESSION['user_id'])) {
+                throw new Exception("User ID is not set in session");
             }
-        }catch (Exception $e) {
-            echo "Error: " . $e->getMessage();
+            $userId = $_SESSION['user_id'];
+            $query->bindValue(":userId", $userId);
+            $query->bindValue(":username", $username);
+            $query->bindValue(":email", $email);
+            $query->bindValue(":description", $description);
+            
+            // Execute the query
+            $result = $query->execute();
+            $rowCount = $query->rowCount();
+            
+            if ($result) {
+                if ($rowCount > 0) {
+                    // Update session with new username
+                    $_SESSION['username'] = $username;
+                    return true;
+                } else {
+                    throw new Exception("No records were updated");
+                }
+            } else {
+                throw new Exception("Update query execution failed");
+            }
+        } catch (Exception $e) {
+            $_SESSION['error'] = "Error: " . $e->getMessage();
             return false;
         }
     }
@@ -97,6 +146,7 @@
     }
 
     function logout(){
+        session_regenerate_id(true);
         session_unset();
         session_destroy();
         return true;

@@ -1,15 +1,16 @@
+
 <?php
   require_once "./_utils/config.php";
   require_once "./_utils/helper.php";
   
   $isGuest = false;
-  
   // Sanitize username from GET
   $username = isset($_GET['username']) ? trim(htmlspecialchars($_GET['username'], ENT_QUOTES, 'UTF-8')) : null;
 
   // handle logout
   if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['logout']) ) {
-    if (auth_current($username) && logout()) {
+    if (auth_current($username)) {
+      logout();
       $isGuest = true;
       header('Location: index.php');
       exit;
@@ -18,7 +19,7 @@
 
   // handle delete account
   if( $_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete']) ){
-    if( auth_current($username) ){
+    if( validate_form( $_POST['username'] , $_POST['email'] ) && auth_current($username) ){
       if( delete_user($username) ){
         $isGuest = true;
         header('Location:index.php');
@@ -32,6 +33,36 @@
           'btnText' => 'Go Home'
         ];
       }
+    }
+  }
+
+  // handle update
+  if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['edit'])) {
+    $formValid = validate_form($_POST['username'], $_POST['email']);
+    $isAuthorized = auth_current($username);
+    
+    if ($formValid && $isAuthorized) {
+        if (update_user($_POST['username'], $_POST['email'], $_POST['description'])) {
+            header("Location: dashboard.php?username=" . urlencode($_POST['username']));
+            exit();
+        } else {
+            $model = [
+                'status' => true,
+                'title' => "Update Failed",
+                'message' => isset($_SESSION['error']) ? $_SESSION['error'] : "Failed to update account information.",
+                'href' => 'dashboard.php?username=' . urlencode($username),
+                'btnText' => 'Try again'
+            ];
+            unset($_SESSION['error']);
+        }
+    } else {
+        $model = [
+            'status' => true,
+            'title' => "Form Error",
+            'message' => "Form validation failed or you're not authorized to edit this profile.",
+            'href' => 'dashboard.php?username=' . urlencode($username),
+            'btnText' => 'Back to Dashboard'
+        ];
     }
   }
 
@@ -83,27 +114,30 @@
       <main class="flex-1 p-8">
         <div class="max-w-3xl mx-auto ">
           <h1 class="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-200 "><?= htmlspecialchars($username) ?>'s Dashboard</h1>
-          <form method="POST">
+
+          <form id="dashboard_form"  method="POST" action="dashboard.php?username=<?= urlencode($username) ?>">
             <!-- User Id -->
             <div class="mb-4">
               <p for="userId" class="block text-gray-800 dark:text-gray-200 text-sm mb-2">User ID: <?= htmlspecialchars($user['user_id']) ?> </p>
             </div>
             <div class="mb-4">
               <label for="username" class="block text-gray-800 dark:text-gray-200 text-sm mb-2">Username</label>
-              <input type="text" id="username" value="<?= htmlspecialchars($user['username']) ?>" readonly class="login-inputs" />
+              <input type="text" name="username" id="username" value="<?= htmlspecialchars($user['username']) ?>" readonly class="login-inputs" />
             </div>
             <div class="mb-4">
               <label for="email" class="block text-gray-800 dark:text-gray-200 text-sm mb-2">Email</label>
-              <input type="email" id="email" value="<?= htmlspecialchars($user['email']) ?>" readonly class="login-inputs" />
+              <input type="email" name="email" id="email" value="<?= htmlspecialchars($user['email']) ?>" readonly class="login-inputs" />
             </div>
             <div class="mb-6">
               <label for="description" class="block text-gray-800 dark:text-gray-200 text-sm mb-2">Description</label>
-              <textarea id="description" readonly class="login-inputs"><?= htmlspecialchars($user['description'] ?? "No description") ?></textarea>
+              <textarea id="description" name="description" readonly class="login-inputs"><?= htmlspecialchars($user['description'] ?? "No description") ?></textarea>
             </div>
 
             <div class="flex justify-end gap-4">
               <?php if (!$isGuest): ?>
-                <button type="submit" name="edit" class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600">Edit Profile</button>
+                <button type="button" id="edit" class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600" > Edit </button>
+                <button type="submit" id="finishEdit" name="edit" class="hidden bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600"> Finish Edit </button>
+                <button type="button" id="cancleEdit" class="hidden bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600" > Cancle Edit </button>
                 <button type="submit" name="logout" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Logout</button>
                 <button type="submit" name="delete" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-800">Delete Account</button>
               <?php elseif( isset($_SESSION['username']) ): ?>
@@ -116,6 +150,7 @@
         </div>
       </main>
     </div>
-  <?php endif; ?>
+  <?php endif; ?> 
+  <script src="./_utils/script.js"></script>
 </body>
 </html>
