@@ -99,10 +99,11 @@
                 throw new Exception("User ID is not set in session");
             }
             $userId = $_SESSION['user_id'];
-            $query->bindValue(":userId", $userId);
-            $query->bindValue(":username", $username);
-            $query->bindValue(":email", $email);
-            $query->bindValue(":description", $description);
+            bind_value( $query , ":userId" , $userId );
+            bind_value( $query , ":username" , $username );
+            bind_value( $query , ":email" , $email );
+            bind_value( $query , ":description" , $description );
+
             
             // Execute the query
             $result = $query->execute();
