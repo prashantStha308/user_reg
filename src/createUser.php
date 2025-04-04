@@ -2,8 +2,9 @@
     require_once "./_utils/config.php";
     require_once "./_utils/helper.php";
 
-    if( !empty($_SESSION['error']) ){
-        $_SESSION['error'] = null;
+    // unset session errors and $model on new page visit or page reload
+    if( isset($model) || isset($_SESSION['error']) ){
+        unset_errors();
     }
 
     if( $_SERVER['REQUEST_METHOD'] == 'POST' ){
@@ -13,7 +14,7 @@
 
         if( create_user( $username , $email , $password ) ){
             session_regenerate_id(true);
-            $_SESSION['error'] = null;
+            unset_errors();
             header("Location:login.php");
             exit();
         }
@@ -46,7 +47,7 @@
                 </h1>
                 <form class="space-y-4 md:space-y-6" action="createUser.php" method="POST">
                     <div>
-                    <?php if (!empty($_SESSION['error'])) { echo "<p class='text-red-500'>{$_SESSION['error']}</p>"; } ?>
+                    <?php if (isset($_SESSION['error'])) { echo "<p class='text-red-500'>{$_SESSION['error']}</p>"; } ?>
                     </div>
                     <div>
                         <label for="username" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Username</label>

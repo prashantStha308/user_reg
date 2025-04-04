@@ -1,9 +1,9 @@
 <a href="<?= "dashboard.php?username=" . urlencode($username) ?>" >
     <section id="user_tile" class="group relative overflow-hidden rounded-lg">
         <div class="text-2xl text-gray-800 dark:text-white bg-white/55 dark:bg-black/35 backdrop-blur-3xl border border-gray-500 rounded-lg px-8 py-5 grid shadow-lg hover:border-purple-500 transition-all duration-300 ease-in-out z-20 hover:border-l-pink-300 hover:border-r-purple-700 ">
-            <div class="whitespace-normal break-all max-w-[250px]">
-                <h1 class="text-sm" > Username: <?= htmlspecialchars($username) ?> </h1>
-                <h4 class="text-sm"> Email: <?= htmlspecialchars($email) ?> </h4>
+            <div class=" grid gap-4 whitespace-normal break-all max-w-[250px]">
+                <h1 class="text-sm" > <span class="font-bold text-purple-600 dark:text-white">Username:</span> <?= htmlspecialchars($username) ?> </h1>
+                <h4 class="text-sm"> <span class="font-bold text-purple-600 dark:text-white">Email:</span> <?= htmlspecialchars($email) ?> </h4>
             </div>
         </div>
         <!-- normal effect on dark mode -->

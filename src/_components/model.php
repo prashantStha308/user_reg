@@ -7,11 +7,11 @@
             <h1 class="text-2xl font-bold text-purple-400 mb-4"><?= $model['title'] ?></h1>
             <p class="text-gray-700 dark:text-gray-200 text-left mb-4"><?= $model['message'] ?></p>
             
-            <?php if( $model['btnText'] ) : ?>
+            <?php if( !empty($model['btnText']) ) : ?>
                 <div class="text-right">
-                    <a href="<?= $model['href'] ? $model['href'] : "#" ?>"
+                    <a href="<?= !empty($model['href']) ? urlencode($model['href']) : "#" ?>"
                     class="inline-block bg-purple-400 hover:bg-purple-500 py-2 px-4 text-white rounded-md font-semibold uppercase text-sm transition-all duration-150 ease-in-out">
-                        <?= $model['btnText'] ?>
+                        <?= htmlspecialchars($model['btnText']) ?>
                     </a>
                 </div>
             <?php endif; ?>

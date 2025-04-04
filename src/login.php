@@ -1,45 +1,23 @@
 <?php
-        require_once "./_utils/config.php";
-        require_once "./_utils/helper.php";
+    require_once "./_utils/config.php";
+    require_once "./_utils/helper.php";
 
+    // unset session errors and $model on new page visit or page reload
+    if( isset($model) || isset($_SESSION['error']) ){
+        unset_errors();
+    }
+    // handle login
     if( $_SERVER['REQUEST_METHOD'] == 'POST' ) {
         $email = $_POST['email'];
         $password = $_POST['password'];
 
-        if( auth_user( $email , $password ) ){
+        if( login( $email , $password ) ){
             session_regenerate_id(true);
-            unset($_SESSION['error']);
+            unset_errors();
             header("Location: dashboard.php?username=" . urlencode($_SESSION['username']));
             exit;
         }else{
             $_SESSION['error'] = "Invalid email or password";
-        }
-    }
-
-    function auth_user( $email , $password ){
-        try{
-            $db = new PDO( "mysql:host=localhost;dbname=user_management" , USER , PASSWORD );
-
-            $query = $db->prepare("SELECT * FROM users WHERE email = :email ");
-            $query->bindParam( ":email" , $email );
-            $query->execute();
-            $user = $query->fetch(PDO::FETCH_ASSOC);
-            
-            // Check if user exists and verify password
-            if ($user && password_verify($password, $user['password'])) {
-                // start session if login successful
-                session_start();
-                $_SESSION['email'] = $user['email'];
-                $_SESSION['username'] = $user['username'];
-                $_SESSION['user_id'] = $user['user_id'];
-                $_SESSION['last_activity'] = time();
-                return true;
-            } else {
-                return false;
-            }   
-        }catch( PDOException $e ){
-            die("Database connection failed: " . $e->getMessage());
-            return false;
         }
     }
 
