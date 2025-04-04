@@ -111,7 +111,7 @@
     <?php include "./_components/model.php"; ?>
   <?php else : ?>
     <div class="min-h-screen grid px-4 mb-4">
-      <div class="flex border border-gray-500 rounded-md bg-black/5 dark:bg-white/5 backdrop-blur-xl">
+      <div class="flex justify-center items-center border border-gray-500 rounded-md bg-black/5 dark:bg-white/5 backdrop-blur-xl">
         <!-- main form -->
         <main class="flex-1 p-8">
           <div class="max-w-3xl mx-auto ">

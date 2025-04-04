@@ -2,8 +2,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const editBtn = document.getElementById("edit");
     const cancleEditBtn = document.getElementById("cancleEdit");
     const finishEditBtn = document.getElementById("finishEdit");
-    const submitBtns = Array.from(document.querySelectorAll("form[id='dashboard_form'] button[type='submit']"));
-    const inputElements = Array.from(document.querySelectorAll("form[id='dashboard_form'] input, form[id='dashboard_form'] textarea"));
+    const submitBtns = Array.from(document.querySelectorAll("#dashboard_form button[type='submit']"));
+    const inputElements = Array.from(document.querySelectorAll("#dashboard_form input, #dashboard_form textarea"));
+
+    const username = document.querySelector("input[name='username']");
+    const email = document.querySelector("input[name='email']");
+    const description = document.querySelector("textarea[name='description']");
+
+    let uValue , eValue , dValue;
 
     const toggleInputs = () => {
         inputElements.forEach(item => {
@@ -12,6 +18,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handleUpdate() {
+        uValue = username.value;
+        eValue = email.value;
+        dValue = description.value;
         toggleInputs();
         // Hide all submit buttons except Finish Edit
         submitBtns.forEach(btn => {
@@ -31,6 +40,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function cancleEdit(){
+        username.value = uValue;
+        email.value = eValue;
+        description.value = dValue;
         toggleInputs();
         // Hide all submit buttons except Finish Edit
         submitBtns.forEach(btn => {
