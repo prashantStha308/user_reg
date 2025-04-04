@@ -8,12 +8,12 @@
         $query->bindValue( $param , $value );
     }
 
-    function validate_form( $username , $email , $password = "__registered_password" ){
+    function validate_form( $username , $email , $password = "__registered_password__" ){
         try{
             if( empty($username) || empty($email) ){
                 throw new Exception("Required Fields missing");
             }
-            if( $password !== "__registered_password" && empty($password) ){
+            if( $password !== "__registered_password__" && empty($password) ){
                 throw new Exception("Required Fields missing");
             }
             return true;
@@ -24,12 +24,8 @@
     }
 
     function create_user( $username , $email , $password ){
+        global $db;
         try{
-            // make a pdo
-            $db = new pdo( 'mysql:host=localhost;dbname=user_management' , USER , PASSWORD );
-            // enable error handeling
-            $db->setAttribute( PDO::ATTR_ERRMODE , PDO::ERRMODE_EXCEPTION );
-
             $checkQuery = $db->prepare("SELECT email FROM users WHERE email = :email LIMIT 1");
             bind_param( $checkQuery , ":email" , $email );
             $checkQuery->execute();

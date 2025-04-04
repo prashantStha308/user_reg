@@ -1,7 +1,7 @@
 <?php
     function is_active( $page ){
         global $current_page;
-        return $page === $current_page ? "text-pink-400" : '';
+        return $page === $current_page ? "text-purple-500" : '';
     }
 ?>
 <script>
@@ -15,10 +15,9 @@
         }
     }
 </script>
-
-<header class="lg:px-16 px-4 bg-gray-100 dark:bg-gray-800 flex flex-wrap items-center py-4 shadow-md">
+<header class="sticky top-0 z-50 lg:px-16 px-4 bg-black/5 dark:bg-white/5 backdrop-blur-xl flex flex-wrap items-center py-4 shadow-lg my-4 mx-2 border border-gray-500 rounded-md">
     <div class="flex-1 flex justify-between items-center ">
-        <a href="index.php" class="text-xl font-bold text-purple-500 hover:text-pink-400 transition-all duration-150 ease-in-out"> User Registration </a>
+        <a href="index.php" class="text-xl font-bold text-purple-500 hover:text-pink-400 transition-all duration-200 ease-in-out"> User Registration </a>
     </div>
 
     <label for="menu-toggle" class="pointer-cursor md:hidden block" onclick="handleClick()">

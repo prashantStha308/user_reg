@@ -6,14 +6,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const inputElements = Array.from(document.querySelectorAll("form[id='dashboard_form'] input, form[id='dashboard_form'] textarea"));
 
     const toggleInputs = () => {
-        // Toggle readonly state for all input and textarea fields
         inputElements.forEach(item => {
             item.readOnly = !item.readOnly;
         });
     }
 
     function handleUpdate() {
-
         toggleInputs();
         // Hide all submit buttons except Finish Edit
         submitBtns.forEach(btn => {
