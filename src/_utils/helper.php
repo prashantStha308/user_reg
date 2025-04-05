@@ -56,25 +56,41 @@
         }
     }
 
-    function validate_form( $username , $email , $password = "__registered_password__" ){
-        $_SESSION['last_activity'] = time();
+    function validate_form( $username , $email , $password = null ){
+        // regexes:
+        $pReg = '/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).{8,}$/'; //password
+        $uReg = '/[a-zA-Z0-9]{3,50}/'; //username
         try{
-            if( $username === "__ristricted_username__" ){
-                throw new Exception("Invalid username, please choose a new one");
-            }
             if( empty($username) || empty($email) ){
                 throw new Exception("Required Fields missing");
             }
-            if( $password !== "__registered_password__" && empty($password) ){
-                throw new Exception("Required Fields missing");
+            // Only check for password if it's provided
+            if (isset($password)) {
+                if (empty($password)) {
+                    throw new Exception("Required Fields missing");
+                }
+                // validate password
+                if( !preg_match( $pReg , $password ) ){
+                    throw new Exception("Password should be an alphanumeric value containing at least 1 lowercase letter, 1 uppercase letter, and 1 digit");
+                }
             }
+    
+            // Validate email
+            if( !filter_var( $email , FILTER_VALIDATE_EMAIL ) ){
+                throw new Exception('Invalid email');
+            }
+            // validate username
+            if( !preg_match( $uReg , $username ) ){
+                throw new Exception("Username should only contain alphanumeric values and should be of length 3 to 50");
+            }
+    
             return true;
         }catch( Exception $e ){
-            $_SESSION['error'] = "Error encountered: " . $e->getMessage();
+            $_SESSION['error'] = "Error: " . $e->getMessage();
             return false;
         }
     }
-
+    
     // ----------------------Project essentials----------------------
     function login( $email , $password ){
         global $db;
@@ -95,7 +111,6 @@
                     $_SESSION['user_id'] = $user['user_id'];
                     $_SESSION['email'] = $user['email'];
                     $_SESSION['username'] = $user['username'];
-                    $_SESSION['last_activity'] = time();
                     return true;
                 } else {
                     if(!isset($_SESSION['password_count'])){
@@ -114,27 +129,22 @@
         }
     }
 
-    function logout(){
-        session_regenerate_id(true);
-        session_unset();
-        session_destroy();
-        return true;
-    }
-
-    function create_user( $username , $email , $password ){
+    function create_user( $username , $email , $password , $description ){
         global $db;
         try{
             if( get_data_by_username( $username , 'email' ) ){
-                throw new Exception("Email already exists. Please use a different email.");
+                throw new Exception("Email already in use. Please use a different email.");
             }
-            if( validate_form( $username , $email , $password ) ){
-                $hashed_password = password_hash($password , PASSWORD_DEFAULT);
-                $query = $db->prepare("INSERT INTO users( username , email , password ) VALUES ( :username , :email , :password )");
-                bind_param( $query , ":username" , $username );
-                bind_param( $query , ":email" , $email );
-                bind_param( $query , ":password" , $hashed_password );
-                $query->execute();
+            if( get_data_by_username( $username , 'username' ) ){
+                throw new Exception("Username already in use. Please use a different username");
             }
+            $hashed_password = password_hash($password , PASSWORD_DEFAULT);
+            $query = $db->prepare("INSERT INTO users( username , email , password , description ) VALUES ( :username , :email , :password , :description )");
+            bind_param( $query , ":username" , $username );
+            bind_param( $query , ":email" , $email );
+            bind_param( $query , ":password" , $hashed_password );
+            bind_param( $query , ":description" , $description );
+            $query->execute();
             return true;
         }catch( Exception $e ){
             $_SESSION['error'] = "Error: " . $e->getMessage();
@@ -142,11 +152,11 @@
         }
     }
 
-    function get_user($username = "__ristricted_username__", $limit = 15, $page = 1) {
+    function get_user($username = null, $limit = 15, $page = 1) {
         global $db;
         try {
             
-            if ($username === "__ristricted_username__") {
+            if ( !isset($username) ) {
                 $offset = ($page - 1) * $limit;
                 $query = $db->prepare(" SELECT * FROM users LIMIT {$limit} OFFSET {$offset} ");
                 $query->execute();
@@ -156,7 +166,9 @@
                 bind_param( $query , ":username" , $username );
                 $query->execute();
                 $result = $query->fetch(PDO::FETCH_ASSOC);
-                
+                if( !$result){
+                    throw new Exception("User with username: {$username} doesn't exist");
+                }
             }
             return $result;
         } catch (Exception $e) {
@@ -171,7 +183,7 @@
             if( !isset($_SESSION['user_id']) ){
                 throw new Exception("No user_id in session. Cannot update without proper user_id.");
             }
-            if( get_data_by_id( $_SESSION['user_id'] , 'username' ) && validate_form( $username , $email ) ){
+            if( get_data_by_id( $_SESSION['user_id'] , 'username' ) ){
                 $query = $db->prepare("UPDATE users SET username = :username, email = :email, description = :description WHERE user_id = :user_id");
                 $userId = $_SESSION['user_id'];
                 bind_value( $query , ":user_id" , $userId );
@@ -239,5 +251,4 @@
           ];
     }
     
-
 ?>

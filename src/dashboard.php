@@ -2,7 +2,7 @@
     require_once "./_utils/config.php";
     require_once "./_utils/helper.php";
 
-    // unset session errors and $model on new page visit or page reload
+    // unset error on page reload
     if( isset($model) || isset($_SESSION['error']) ){
         unset_errors();
     }
@@ -11,17 +11,19 @@
     $isGuest = false;
     // Sanitize username from GET
     $username = isset($_GET['username']) ? trim(htmlspecialchars($_GET['username'], ENT_QUOTES, 'UTF-8')) : null;
+    $current_user = isset($_SESSION['username']) ? $_SESSION['username'] : null;
 
     // handle logout
     if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['logout'])) {
-        if (auth_user($username)) {
+        global $username;
+        if ( isset($username) && auth_user($username) ) {
             unset_errors();
             logout();
             $isGuest = true;
             header('Location: index.php');
             exit;
         } else {
-            set_model("Authentication Error", "You are not the owner of this account", "index.php", "Home");
+            $_SESSION['error'] = "Authentication Error: You are not the owner of this account";
         }
     }
 
@@ -43,12 +45,12 @@
 
     // handle update
     if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['edit'])) {
-        $_SESSION['last_activity'] = time();
-        if (update_user($_POST['username'], $_POST['email'], $_POST['description'])) {
-            session_regenerate_id(true);
-            unset_errors();
-            header("Location: dashboard.php?username=" . urlencode($_POST['username']));
-            exit();
+        if( validate_form($_POST['username'], $_POST['email']) ){
+            if (update_user($_POST['username'], $_POST['email'], $_POST['description'])) {
+                unset_errors();
+                header("Location: dashboard.php?username=" . urlencode($_POST['username']));
+                exit();
+            }
         }
     }
 
@@ -70,23 +72,21 @@
     include "./_components/header.php";
 
     if (!isset($username)) {
-        if (isset($_SESSION['username'])) {
+        if (isset($current_user)) {
             unset_errors();
-            session_regenerate_id(true);
-            header("Location:dashboard.php?username={$_SESSION['username']}");
+            header("Location:dashboard.php?username={$current_user}");
         } else {
             set_model("Login required", "Please login to view your dashboard", "login.php", "Login");
         }
     } else {
         $user = get_user($username);
-        if (!$user || (!isset($_SESSION['username']) || $user['username'] !== $_SESSION['username'])) {
+        if (!$user || (!isset($current_user) || $user['username'] !== $current_user)) {
             $isGuest = true;
         }else{
             $isGuest = false;
         }
-        if (!$user) {
+        if ( $user === false ) {
             set_model("Invalid User", "This user doesn't exit.", "index.php", "Home");
-            exit();
         }
     }
     ?>
@@ -140,20 +140,20 @@
                             <div class="flex justify-end gap-4">
                                 <?php if (!$isGuest): ?>
                                     <button type="button" id="edit"
-                                        class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600">
+                                        class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 focus:bg-purple-800 ">
                                         Edit </button>
                                     <button type="submit" id="finishEdit" name="edit"
-                                        class="hidden bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600"> Finish
+                                        class="hidden bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 focus:bg-purple-800 "> Finish
                                         Edit </button>
-                                    <button type="button" id="cancleEdit"
-                                        class="hidden bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"> Cancle Edit
+                                    <button type="button" id="cancelEdit"
+                                        class="hidden bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"> Cancel Edit
                                     </button>
                                     <button type="submit" name="logout"
                                         class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Logout</button>
                                     <button type="submit" name="delete"
                                         class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-800">Delete Account</button>
-                                <?php elseif (isset($_SESSION['username'])): ?>
-                                    <a href="dashboard.php?username=<?= $_SESSION['username'] ?>">
+                                <?php elseif (isset($current_user)): ?>
+                                    <a href="dashboard.php?username=<?= $current_user ?>">
                                         <button type="button"
                                             class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-800">View your
                                             dashboard</button>
@@ -167,12 +167,11 @@
                 <div
                     class="absolute bottom-10 right-14 -z-30 px-56 py-24 rounded-md bg-purple-400/80 dark:bg-gray-600/90 blur-3xl">
                 </div>
-                <div
-                    class="absolute top-5 left-4 -z-30 px-44 py-24 rounded-md bg-purple-400/80 dark:bg-gray-600/90 blur-3xl">
-                </div>
+                <div class="absolute top-5 left-4 -z-30 px-44 py-24 rounded-md bg-purple-400/80 dark:bg-gray-600/90 blur-3xl"></div>
             </div>
         </div>
     <?php endif; ?>
+    <!-- scripts -->
     <script src="./_utils/script.js"></script>
 </body>
 

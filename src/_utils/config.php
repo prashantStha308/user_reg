@@ -1,21 +1,43 @@
+
+<!-- PHP CONFIGURATION FOR PROJECT: USER_REGISTERATION -->
+
 <?php
+    // start session only if not active
     if(session_status() !== PHP_SESSION_ACTIVE) session_start();
-    $_SESSION['last_activity'] = time();
 
     // To display errors
     error_reporting(E_ALL);
     ini_set('display_errors', 1);
 
+    // get contents from .env
+    $rootPath = dirname(__DIR__, 2); // Goes up 2 levels from _utils to src -> then to root
+    $env = file_get_contents($rootPath."/.env");
+    $lines = explode("\n",$env);
+    // load env variables
+    foreach($lines as $line){
+      preg_match("/([^#]+)\=(.*)/",$line,$matches);
+      if(isset($matches[2])){ putenv(trim($line)); }
+    } 
+
     // constants
-    define( "USER" , 'root' );
-    define( "PASSWORD" , '0308' );
-    define( "HOST" , 'localhost' );
-    define( "DB_NAME" , 'user_management' );
+    define( "USER" , getenv('USER') );
+    define( "PASSWORD" , getenv('PASSWORD') );
+    define( "HOST" , getenv('HOST') );
+    define( "DB_NAME" , getenv('DB_NAME') );
     define( "PASSWORD_ATTEMPT_MAX" , 5 );
+    define( "SESSION_TIMEOUT" , 1080 );
 
     // session variables
     if (!isset($_SESSION['password_count'])) {
         $_SESSION['password_count'] = 0;
+    }
+
+    // functions
+    function logout(){
+        session_regenerate_id(true);
+        session_unset();
+        session_destroy();
+        return true;
     }
 
     // Making a single pdo objects for entire project
@@ -27,17 +49,19 @@
         die();
     }
 
-    $session_timeout = 1000;
-    // Check if "last activity" timestamp exists
-    if (isset($_SESSION['last_activity'])) {
+    // Destrory session after $session_timeout duration if last_activity exists AND if user is logged in
+    if ( isset($_SESSION['last_activity']) && isset($_SESSION['username']) ) {
         $inactive_time = time() - $_SESSION['last_activity'];
         
-        if ($inactive_time > $session_timeout) {
-            // Destroy the session
-            session_unset();
-            session_destroy();
+        if ($inactive_time > SESSION_TIMEOUT) {
+            // logout
+            logout();
+            // start new session
+            session_start();
+            $_SESSION['timeout'] = true;
             header("Location: login.php?timeout=true");
             exit;
         }
     }
+    $_SESSION['last_activity'] = time();
 ?>
