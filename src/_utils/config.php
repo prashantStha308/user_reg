@@ -24,13 +24,7 @@
     define( "PASSWORD" , getenv('PASSWORD') );
     define( "HOST" , getenv('HOST') );
     define( "DB_NAME" , getenv('DB_NAME') );
-    define( "PASSWORD_ATTEMPT_MAX" , 5 );
     define( "SESSION_TIMEOUT" , 1080 );
-
-    // session variables
-    if (!isset($_SESSION['password_count'])) {
-        $_SESSION['password_count'] = 0;
-    }
 
     // functions
     function logout(){

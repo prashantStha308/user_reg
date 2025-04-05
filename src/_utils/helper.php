@@ -95,9 +95,6 @@
     function login( $email , $password ){
         global $db;
         try{
-            if( isset($_SESSION['password_count']) && $_SESSION['password_count'] > PASSWORD_ATTEMPT_MAX ){
-                throw new Exception("Max attempt reached. You have been blocked");
-            }
             $query = $db->prepare("SELECT * FROM users WHERE email = :email ");
             $query->bindParam( ":email" , $email );
             $query->execute();
@@ -113,11 +110,6 @@
                     $_SESSION['username'] = $user['username'];
                     return true;
                 } else {
-                    if(!isset($_SESSION['password_count'])){
-                        $_SESSION['password_count'] = 1;
-                    }else{
-                        $_SESSION['password_count'] += 1;
-                    }
                     throw new Exception("Invalid password. Please try again");
                 }
             }else{
