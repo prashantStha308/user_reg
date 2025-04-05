@@ -1,6 +1,6 @@
 <?php
-    require_once "./_utils/config.php";
-    require_once "./_utils/helper.php";
+    require_once "../server.php";
+    require_once "../controllers/authStore.php";
 
     // unset error on page reload
     if( isset($model) || isset($_SESSION['error']) ){
@@ -23,13 +23,13 @@
             header('Location: index.php');
             exit;
         } else {
-            $_SESSION['error'] = "Authentication Error: You are not the owner of this account";
+            $_SESSION['error'] = "authStoreentication Error: You are not the owner of this account";
         }
     }
 
     // handle delete account
     if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete'])) {
-        if (validate_form($_POST['username'], $_POST['email']) && auth_user($username)) {
+        if (validate_form($_POST['username'], $_POST['email']) && authStore_user($username)) {
             if (delete_user($username)) {
                 unset_errors();
                 $isGuest = true;
@@ -63,13 +63,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title> Dashboard | User Registration </title>
-    <link rel="stylesheet" href="./output.css">
+    <link rel="stylesheet" href="../output.css">
 </head>
 
 <body>
     <?php
     $current_page = "dashboard";
-    include "./_components/header.php";
+    include "../components/header.php";
 
     if (!isset($username)) {
         if (isset($current_user)) {
@@ -92,7 +92,7 @@
     ?>
 
     <?php if (isset($model) && $model['status']): ?>
-        <?php include "./_components/model.php"; ?>
+        <?php include "../components/model.php"; ?>
     <?php else: ?>
         <div class="min-h-screen grid px-4 mb-4">
             <div
@@ -172,7 +172,7 @@
         </div>
     <?php endif; ?>
     <!-- scripts -->
-    <script src="./_utils/script.js"></script>
+    <script src="../store/script.js"></script>
 </body>
 
 </html>

@@ -1,16 +1,15 @@
-
-<!-- PHP CONFIGURATION FOR PROJECT: USER_REGISTERATION -->
-
 <?php
-    // start session only if not active
-    if(session_status() !== PHP_SESSION_ACTIVE) session_start();
+    if( session_status() !== PHP_SESSION_ACTIVE ) session_start();
 
-    // To display errors
-    error_reporting(E_ALL);
-    ini_set('display_errors', 1);
+    $devMode = true;
+    // Enable debugginng on devMode
+    if($devMode){
+        error_reporting(E_ALL);
+        ini_set('display_errors', 1);
+    }
 
     // get contents from .env
-    $rootPath = dirname(__DIR__, 2); // Goes up 2 levels from _utils to src -> then to root
+    $rootPath = dirname(__DIR__, 1); // Goes up 1 levels from src to root
     $env = file_get_contents($rootPath."/.env");
     $lines = explode("\n",$env);
     // load env variables
@@ -20,10 +19,6 @@
     } 
 
     // constants
-    define( "USER" , getenv('USER') );
-    define( "PASSWORD" , getenv('PASSWORD') );
-    define( "HOST" , getenv('HOST') );
-    define( "DB_NAME" , getenv('DB_NAME') );
     define( "SESSION_TIMEOUT" , 1080 );
 
     // functions
@@ -36,7 +31,7 @@
 
     // Making a single pdo objects for entire project
     try {
-        $db = new PDO('mysql:host=' . HOST .';dbname=' . DB_NAME, USER, PASSWORD);
+        $db = new PDO('mysql:host=' . getenv('HOST') .';dbname=' . getenv('DB_NAME'), getenv('USER'), getenv('PASSWORD'));
         $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     } catch (PDOException $e) {
         echo "Connection failed: " . $e->getMessage();

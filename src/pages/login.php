@@ -1,6 +1,6 @@
 <?php
-    require_once "./_utils/config.php";
-    require_once "./_utils/helper.php";
+    require_once "../server.php";
+    require_once "../controllers/authStore.php";
 
     // unset session errors and $model on new page visit or page reload
     if( isset($model) || isset($_SESSION['error']) ){
@@ -10,10 +10,12 @@
     if( $_SERVER['REQUEST_METHOD'] == 'POST' ) {
         $email = $_POST['email'];
         $password = $_POST['password'];
-
-        if( login( $email , $password ) ){
-            session_regenerate_id(true);
+    
+        if( validate_login_form( $email , $password ) && login( $email , $password ) ){
             unset_errors();
+            if( $_POST['remember-me'] ){
+                setcookie('remember_me', $username, time() + 86400, '/');
+            }
             header("Location: dashboard.php?username=" . urlencode($_SESSION['username']));
             exit;
         }else{
@@ -29,12 +31,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title> Login | User Registration </title>
-    <link rel="stylesheet" href="./output.css">
+    <link rel="stylesheet" href="../output.css">
 </head>
 <body>
     <?php
         $current_page = "log in";
-        include "./_components/header.php"
+        include "../components/header.php"
     ?>
 
     <main id="login" >
@@ -90,10 +92,10 @@
                             <div class="flex flex-wrap items-center justify-between gap-4">
                                 <!-- Remember me? -->
                                 <div class="flex items-center">
-                                    <!-- <input id="remember-me" name="remember-me" type="checkbox" class="h-4 w-4 shrink-0 text-purple-600 focus:ring-purple-500 border-gray-300 rounded" />
+                                    <input id="remember-me" name="remember-me" type="checkbox" class="h-4 w-4 shrink-0 text-purple-600 focus:ring-purple-500 border-gray-300 rounded" />
                                     <label for="remember-me" class="ml-3 block text-sm text-gray-800 dark:text-white">
                                         Remember me
-                                    </label> -->
+                                    </label>
                                 </div>
 
                                 <!-- Forget Your Password? -->
@@ -123,6 +125,6 @@
     </main>
 
     <!-- scripts -->
-    <script src="./_utils/script.js"></script>
+    <script src="../store/script.js"></script>
 </body>
 </html>

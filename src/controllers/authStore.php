@@ -1,13 +1,6 @@
 <?php
-    require_once "config.php";
-
-    // ----------------------mis----------------------
-    function bind_param( &$query , $param , &$value ){
-        $query->bindParam( $param , $value );
-    }
-    function bind_value( &$query , $param , &$value ){
-        $query->bindValue( $param , $value );
-    }
+    require_once "../server.php";
+    require_once "utilityStore.php";
 
     // getters
     function get_data_by_id($user_id, $key) {
@@ -26,21 +19,28 @@
         }
     }
 
-    function get_data_by_username( $username , $key ){
+    function get_data_by_username( $value , $key ){
         global $db;
-        $query = $db->prepare("SELECT {$key} FROM users WHERE username = :username LIMIT 1");
-        bind_param( $query , ":username" , $username );
+        
+        // Check if the key is valid (either 'username' or 'email')
+        if ($key != 'username' && $key != 'email') {
+            throw new Exception("Invalid key. Only 'username' and 'email' are allowed.");
+        }
+        
+        // Prepare the SQL query dynamically based on the key
+        $query = $db->prepare("SELECT {$key} FROM users WHERE {$key} = :value LIMIT 1");
+        bind_param($query, ":value", $value);
         $query->execute();
-    
+        
         if ($query->rowCount() > 0) {
+            // Return the specific field value from the result
             $res = $query->fetch(PDO::FETCH_ASSOC);
-            // $res is an associative array
             return $res[$key];
         } else {
-            echo "No data found for username: {$username}";
             return false;
         }
     }
+    
 
     // ----------------------auth and validation----------------------
     function auth_user($username){
@@ -90,6 +90,21 @@
             return false;
         }
     }
+
+    function validate_login_form( $email , $password ){
+        try{
+            if( empty($email) || empty($password) ){
+                throw new Exception("Required fields missing");
+            }
+            if( !filter_var( $email , FILTER_VALIDATE_EMAIL ) ){
+                throw new Exception("Invalid email format");
+            }
+            return true;
+        }catch( Exception $e ){
+            $_SESSION['error'] = "Error: " . $e->getMessage();
+            return false;
+        }
+    }
     
     // ----------------------Project essentials----------------------
     function login( $email , $password ){
@@ -106,7 +121,6 @@
                     // start session if login successful
                     session_regenerate_id(true);
                     $_SESSION['user_id'] = $user['user_id'];
-                    $_SESSION['email'] = $user['email'];
                     $_SESSION['username'] = $user['username'];
                     return true;
                 } else {
@@ -223,24 +237,6 @@
             $_SESSION['error'] = "Error: " . $e->getMessage();
             return false;
         }
-    }
-
-    // ----------------------setters----------------------
-    function unset_errors(){
-        global $model;
-        unset($model);
-        unset($_SESSION['error']);
-    }
-
-    function set_model( $title = "Error: " , $message= "Error Message." , $href = null , $btnText = null ){
-        global $model;
-        $model = [
-            'status' => true,
-            'title' => $title,
-            'message' => $message,
-            'href' => $href,
-            'btnText' => $btnText
-          ];
     }
     
 ?>

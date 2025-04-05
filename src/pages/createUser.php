@@ -1,6 +1,6 @@
 <?php
-    require_once "./_utils/config.php";
-    require_once "./_utils/helper.php";
+    require_once "../server.php";
+    require_once "../controllers/authStore.php";
 
     // unset session errors and $model on new page visit or page reload
     if( isset($model) || isset($_SESSION['error']) ){
@@ -15,7 +15,6 @@
         $description = !empty($_POST['description']) ? $_POST['description'] : "No description";
         if( validate_form( $username , $email , $password ) ){
             if( create_user( $username , $email , $password , $description ) ){
-                session_regenerate_id(true);
                 unset_errors();
                 header("Location:login.php");
                 exit();
@@ -31,13 +30,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up | User Registration</title>
-    <link rel="stylesheet" href="./output.css">
+    <link rel="stylesheet" href="../output.css">
 </head>
 <body>
 
     <?php
         $current_page = "create user";
-        include "./_components/header.php"
+        include "../components/header.php"
     ?>
 
     <section id="signup" class="md:min-h-screen grid px-4 mb-4" >
@@ -98,7 +97,7 @@
     </section>
 
     <!-- scripts -->
-    <script src="./_utils/script.js"></script>
+    <script src="../store/script.js"></script>
 
 </body>
 </html>
