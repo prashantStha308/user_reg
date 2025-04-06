@@ -1,6 +1,3 @@
-
-<!-- PHP CONFIGURATION FOR PROJECT: USER_REGISTERATION -->
-
 <?php
     // start session only if not active
     if(session_status() !== PHP_SESSION_ACTIVE) session_start();
@@ -54,9 +51,8 @@
         $inactive_time = time() - $_SESSION['last_activity'];
         
         if ($inactive_time > SESSION_TIMEOUT) {
-            // logout
-            logout();
-            // start new session
+            session_unset();
+            session_destroy();
             session_start();
             $_SESSION['timeout'] = true;
             header("Location: login.php?timeout=true");
