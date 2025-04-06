@@ -1,6 +1,5 @@
 <?php
-    require_once "./_utils/config.php";
-    require_once "./_utils/helper.php";
+    require_once "../controllers/auth.php";
     $users = get_user() ?? null;
 ?>
 
@@ -10,12 +9,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title> Home | User Registration  </title>
-    <link rel="stylesheet" href="./output.css">
+    <link rel="stylesheet" href="../output.css">
 </head>
 <body class="dark">
     <?php
         $current_page = "home";
-        include "./_components/header.php";
+        include "../components/header.php";
     ?>
 
     <section id="home">
@@ -34,7 +33,7 @@
                         <?php foreach( $users as $user ): ?>
                             <?php
                                 extract($user);
-                                include "./_components/tile.php";
+                                include "../components/tile.php";
                             ?>
                         <?php endforeach; ?>
                         <!-- background effects -->

@@ -10,7 +10,7 @@
     ini_set('display_errors', 1);
 
     // get contents from .env
-    $rootPath = dirname(__DIR__, 2); // Goes up 2 levels from _utils to src -> then to root
+    $rootPath = dirname(__DIR__, 1); // Goes up 1 levels from src to root
     $env = file_get_contents($rootPath."/.env");
     $lines = explode("\n",$env);
     // load env variables

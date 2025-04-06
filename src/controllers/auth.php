@@ -1,5 +1,5 @@
 <?php
-    require_once "config.php";
+    require_once "../server.php";
 
     // ----------------------mis----------------------
     function bind_param( &$query , $param , &$value ){
