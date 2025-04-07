@@ -1,11 +1,6 @@
 <?php
     require_once "../controllers/auth.php";
 
-    // unset session errors and $model on new page visit or page reload
-    if( isset($model) || isset($_SESSION['error']) ){
-        unset_errors();
-    }
-
     // handle user creation
     if( $_SERVER['REQUEST_METHOD'] == 'POST' ){
         $username = $_POST['username'];
@@ -14,7 +9,6 @@
         $description = !empty($_POST['description']) ? $_POST['description'] : "No description";
         if( validate_form( $username , $email , $password ) ){
             if( create_user( $username , $email , $password , $description ) ){
-                session_regenerate_id(true);
                 unset_errors();
                 header("Location:login.php");
                 exit();

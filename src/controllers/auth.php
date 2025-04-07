@@ -104,8 +104,13 @@
             bind_param( $query , ":email" , $email );
             bind_param( $query , ":password" , $hashed_password );
             bind_param( $query , ":description" , $description );
-            $query->execute();
-            return true;
+            if( $query->execute() ){
+                session_regenerate_id(true);
+                return true;
+            }else{
+                throw new Exception("Database error: Failed to create user");
+            }
+            
         }catch( Exception $e ){
             $_SESSION['error'] = "Error: " . $e->getMessage();
             return false;
