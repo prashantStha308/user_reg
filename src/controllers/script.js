@@ -96,8 +96,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    if(editBtn) editBtn.addEventListener('click', handleUpdate);
-    if( cancelEditBtn ) cancelEditBtn.addEventListener('click',cancelEdit);
+    if(dashboardForm){
+        editBtn.addEventListener('click', handleUpdate);
+        cancelEditBtn.addEventListener('click',cancelEdit);
+        deleteBtn.addEventListener('click',confirmDelete);
+    }
     if(toggleBtn) toggleBtn.addEventListener('click',togglePasswordVisibility);
-    if(deleteBtn) deleteBtn.addEventListener('click',confirmDelete);
 });

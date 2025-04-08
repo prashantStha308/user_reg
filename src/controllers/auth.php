@@ -33,7 +33,7 @@
     function validate_form( $username , $email , $password = null ){
         // regexes:
         $pReg = '/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).{8,}$/'; //password
-        $uReg = '/^[a-zA-Z0-9_-]{3,50}$/'; //username
+        $uReg = '/^[a-zA-Z0-9 _-]{3,50}$/'; //username
         try{
             if( empty($username) || empty($email) ){
                 throw new Exception("Required Fields missing");
