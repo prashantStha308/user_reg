@@ -1,10 +1,13 @@
 <?php
     require_once "../controllers/auth.php";
 
-    // unset session errors and $model on new page visit or page reload
-    if( isset($model) || isset($_SESSION['error']) ){
-        unset_errors();
+    if( isset($_SESSION['username']) ){
+        $_SESSION['error'] = "Cannot perform login when a user is already logged in";
+        $_SESSION['error_time'] = time();
+        header("Location:index.php");        
+        exit();
     }
+
     // handle login
     if( $_SERVER['REQUEST_METHOD'] == 'POST' ) {
         $email = $_POST['email'];
@@ -16,10 +19,10 @@
             header("Location: dashboard.php?username=" . urlencode($_SESSION['username']));
             exit;
         }else{
-            $_SESSION['error'] = "Invalid email or password";
+            $_SESSION['error'] = "Invalid email or passwordn";
+            $_SESSION['error_time'] = time();
         }
     }
-
 ?>
 
 <!DOCTYPE html>
@@ -44,20 +47,17 @@
                     <div class="p-8 rounded-2xl bg-white dark:bg-gray-900 shadow">
                         <h2 class="text-gray-800 dark:text-white text-center text-2xl font-bold">Sign in</h2>
                         <!-- timeout message -->
-                        <?php if( isset($_GET['timeout']) && $_GET['timeout'] === 'true' ) : ?>
+                        <?php if( isset($_GET['timeout']) ) : ?>
                             <div>
                                 <h3 class="text-center text-red-500"> Session timeout. Please login again to continue. </h3>
                             </div>
                         <?php endif; ?>
                         <!-- Form -->
                         <form class="mt-8 space-y-4" action="login.php" method="POST">
-                            <!-- error message -->
-                            <?php if( isset($_SESSION['username']) && !empty($_SESSION['username']) ): ?>
-                                <div class="" >
-                                    <h3 class="text-left text-xs md:text-sm xl:text-lg text-black dark:text-gray-400"> Currently logged in as : <span class="text-purple-400 font-bold hover:text-pink-500 transition-all duration-150 ease-in-out"> <?= $_SESSION['username'] ?> </span> </h3>
-                                </div>
-                            <?php endif ?>
-                            <?php if (!empty($_SESSION['error'])) { echo "<p class='text-red-500'>{$_SESSION['error']}</p>"; } ?>
+                            <!-- Error message -->
+                            <?php if( isset($_SESSION['error']) )
+                                echo "<p class='text-red-500'>{$_SESSION['error']}</p>";
+                            ?>
 
                             <!-- Email -->
                             <div>
@@ -89,10 +89,10 @@
                             <div class="flex flex-wrap items-center justify-between gap-4">
                                 <!-- Remember me? -->
                                 <div class="flex items-center">
-                                    <!-- <input id="remember-me" name="remember-me" type="checkbox" class="h-4 w-4 shrink-0 text-purple-600 focus:ring-purple-500 border-gray-300 rounded" />
+                                    <input id="remember-me" name="remember-me" type="checkbox" class="h-4 w-4 shrink-0 text-purple-600 focus:ring-purple-500 border-gray-300 rounded" />
                                     <label for="remember-me" class="ml-3 block text-sm text-gray-800 dark:text-white">
                                         Remember me
-                                    </label> -->
+                                    </label>
                                 </div>
 
                                 <!-- Forget Your Password? -->

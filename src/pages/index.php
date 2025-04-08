@@ -1,6 +1,6 @@
 <?php
-    require_once "../controllers/auth.php";
-    $users = get_user() ?? null;
+    require_once "../controllers/auth.php";;
+    $users = get_users() ?? null;
 ?>
 
 <!DOCTYPE html>
@@ -21,7 +21,11 @@
         <div class="p-4 grid gap-4">
             <div>
                 <h1 class="text-left text-xl md:text-2xl lg:text-3xl text-black dark:text-gray-200 font-bold"> Registered Users in the database </h1>
-                <?php if( isset($_SESSION['username']) && !empty($_SESSION['username']) ): ?>
+                <?php if( isset($_SESSION['error']) )
+                    echo "<p class='text-red-500'>{$_SESSION['error']}</p>";
+                ?>
+
+                <?php if( session_status() === PHP_SESSION_ACTIVE && !empty($_SESSION['username']) ): ?>
                     <h3 class="text-left text-sm md:text-lg xl:text-xl text-black dark:text-gray-400"> Currently logged in as : <span class="text-purple-400 font-bold hover:text-pink-500 transition-all duration-150 ease-in-out"> <?= $_SESSION['username'] ?> </span> </h3>
                 <?php endif ?>
             </div>

@@ -1,11 +1,5 @@
 <?php
     require_once "../controllers/auth.php";
-
-    // unset error on page reload
-    if( isset($model) || isset($_SESSION['error']) ){
-        unset_errors();
-    }
-
     // assume user is not guest initialy
     $isGuest = false;
     // Sanitize username from GET
@@ -15,44 +9,49 @@
     // handle logout
     if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['logout'])) {
         global $username;
-        if ( isset($username) && auth_user($username) ) {
+        if ( logout($username) ) {
             unset_errors();
-            logout();
             $isGuest = true;
             header('Location: index.php');
-            exit;
-        } else {
-            $_SESSION['error'] = "Authentication Error: You are not the owner of this account";
+            exit();
         }
     }
 
     // handle delete account
     if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete'])) {
-        if (validate_form($_POST['username'], $_POST['email']) && auth_user($username)) {
             if (delete_user($username)) {
                 unset_errors();
                 $isGuest = true;
                 header('Location:index.php');
                 exit();
-            } else {
-                $_SESSION['error'] = "Failed to delete your account. Please try again";
             }
-        } else {
-            $_SESSION['error'] = "Failed to delete your account. Please try again";
-        }
     }
 
     // handle update
     if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['edit'])) {
-        if( validate_form($_POST['username'], $_POST['email']) ){
-            if (update_user($_POST['username'], $_POST['email'], $_POST['description'])) {
+        $username = trim(htmlspecialchars($_POST['username']));
+        $email = trim(htmlspecialchars($_POST['email']));
+        $description = !empty(trim($_POST['description'])) ? $_POST['description'] : "No description";
+        
+        // Validate form data
+        if (validate_form($username, $email)) {
+            // Attempt to update user info
+            $res = update_user($username, $email, $description);
+            if ($res) {
                 unset_errors();
-                header("Location: dashboard.php?username=" . urlencode($_POST['username']));
+                // Redirect to the dashboard with the updated username
+                header("Location: dashboard.php?username=" . urlencode($username));
                 exit();
+            } else {
+                set_model("Invalid parameters", "A user with that username/email already exists. Please pick a different one" , "dashboard.php" , "Back" );
             }
+        } else {
+            $_SESSION['error'] = "Invalid form data. Please check your inputs.";
+            $_SESSION['error_time'] = time();
+            header("Location: dashboard.php?username=" . urlencode($current_user));
+            exit();
         }
     }
-
 ?>
 
 <!DOCTYPE html>
@@ -67,27 +66,30 @@
 
 <body>
     <?php
-    $current_page = "dashboard";
-    include "../components/header.php";
+        $current_page = "dashboard";
+        include "../components/header.php";
 
-    if (!isset($username)) {
-        if (isset($current_user)) {
-            unset_errors();
-            header("Location:dashboard.php?username={$current_user}");
+        if (!isset($username)) { //if _GET['username'] doesn't exist
+            if (isset($current_user)) { //if a user has logged in
+                header("Location:dashboard.php?username={$current_user}");
+            } else {
+                set_model("Login required", "Please login to view your dashboard", "login.php", "Login");
+            }
         } else {
-            set_model("Login required", "Please login to view your dashboard", "login.php", "Login");
+            $user = get_user_data( 'username' , $username );
+            $userData = $user['data'] ?? null;
+
+            // if userData is not set, user doesn't exist
+            if ( !isset($userData) ) {
+                set_model("Invalid User", "This user doesn't exit.", "index.php", "Home");
+            }
+            // check if current user is guest or not
+            if( !isset($current_user) || $userData['username'] !== $current_user ){
+                $isGuest = true;
+            }else{
+                $isGuest = false;
+            }
         }
-    } else {
-        $user = get_user($username);
-        if (!$user || (!isset($current_user) || $user['username'] !== $current_user)) {
-            $isGuest = true;
-        }else{
-            $isGuest = false;
-        }
-        if ( $user === false ) {
-            set_model("Invalid User", "This user doesn't exit.", "index.php", "Home");
-        }
-    }
     ?>
 
     <?php if (isset($model) && $model['status']): ?>
@@ -103,16 +105,17 @@
                                 <?= htmlspecialchars($username) ?>'s</span> Dashboard</h1>
 
                         <div>
-                            <?php if (!empty($_SESSION['error'])) {
+                            <!-- error indicator -->
+                            <?php if( isset($_SESSION['error']) )
                                 echo "<p class='text-red-500'>{$_SESSION['error']}</p>";
-                            } ?>
+                            ?>
                         </div>
 
                         <form id="dashboard_form" method="POST" action="dashboard.php?username=<?= urlencode($username) ?>">
                             <!-- User Id -->
                             <div class="mb-4">
                                 <p for="userId" class="block text-gray-800 dark:text-gray-200 text-sm mb-2">User ID:
-                                    <?= htmlspecialchars($user['user_id']) ?>
+                                    <?= htmlspecialchars($userData['user_id']) ?>
                                 </p>
                             </div>
                             <!-- username -->
@@ -120,20 +123,19 @@
                                 <label for="username"
                                     class="block text-gray-800 dark:text-gray-200 text-sm mb-2">Username</label>
                                 <input type="text" name="username" id="username"
-                                    value="<?= htmlspecialchars($user['username']) ?>" readonly class="dashboard-inputs" />
+                                    value="<?= htmlspecialchars($userData['username']) ?>" class="dashboard-inputs" pattern="^[a-zA-Z0-9_-]{3,50}$" readonly required/>
                             </div>
                             <!-- email -->
                             <div class="mb-4">
                                 <label for="email" class="block text-gray-800 dark:text-gray-200 text-sm mb-2">Email</label>
-                                <input type="email" name="email" id="email" value="<?= htmlspecialchars($user['email']) ?>"
-                                    readonly class="dashboard-inputs" />
+                                <input type="email" name="email" id="email" value="<?= htmlspecialchars($userData['email']) ?>" class="dashboard-inputs" required readonly />
                             </div>
                             <!-- description -->
                             <div class="mb-6">
                                 <label for="description"
                                     class="block text-gray-800 dark:text-gray-200 text-sm mb-2">Description</label>
                                 <textarea id="description" name="description" readonly
-                                    class="dashboard-inputs resize-none"><?= htmlspecialchars($user['description'] ?? "No description") ?></textarea>
+                                    class="dashboard-inputs resize-none"><?= htmlspecialchars($userData['description'] ?? "No description") ?></textarea>
                             </div>
                             <!-- buttons -->
                             <div class="flex justify-end gap-4">
@@ -149,7 +151,7 @@
                                     </button>
                                     <button type="submit" name="logout"
                                         class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Logout</button>
-                                    <button type="submit" name="delete"
+                                    <button type="button" id="deleteBtn"
                                         class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-800">Delete Account</button>
                                 <?php elseif (isset($current_user)): ?>
                                     <a href="dashboard.php?username=<?= $current_user ?>">
@@ -163,9 +165,7 @@
                     </div>
                 </main>
                 <!-- background effects -->
-                <div
-                    class="absolute bottom-10 right-14 -z-30 px-56 py-24 rounded-md bg-purple-400/80 dark:bg-gray-600/90 blur-3xl">
-                </div>
+                <div class="absolute bottom-10 right-14 -z-30 px-56 py-24 rounded-md bg-purple-400/80 dark:bg-gray-600/90 blur-3xl"></div>
                 <div class="absolute top-5 left-4 -z-30 px-44 py-24 rounded-md bg-purple-400/80 dark:bg-gray-600/90 blur-3xl"></div>
             </div>
         </div>

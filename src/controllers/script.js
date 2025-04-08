@@ -1,4 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // dashboard form elements
+    const dashboardForm = document.getElementById("dashboard_form");
+    const deleteBtn = document.getElementById("deleteBtn")
     const editBtn = document.getElementById("edit");
     const cancelEditBtn = document.getElementById("cancelEdit");
     const finishEditBtn = document.getElementById("finishEdit");
@@ -34,6 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 btn.classList.add("hidden");
             }
         });
+        deleteBtn.classList.add('hidden');
 
         // Toggle visibility between Edit and Finish Edit buttons
         editBtn.classList.add("hidden");
@@ -56,6 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 btn.classList.remove("hidden");
             }
         });
+        deleteBtn.classList.remove('hidden');
 
         // Toggle visibility between Edit and Finish Edit buttons
         editBtn.classList.remove("hidden");
@@ -78,7 +83,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function confirmDelete(){
+        const confirmed = confirm("This process is irreversable. Are you sure about this?");
+
+        if( confirmed ){
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'delete';
+            input.value = '1';
+            dashboardForm.appendChild(input);
+            dashboardForm.submit();
+        }
+    }
+
     if(editBtn) editBtn.addEventListener('click', handleUpdate);
     if( cancelEditBtn ) cancelEditBtn.addEventListener('click',cancelEdit);
     if(toggleBtn) toggleBtn.addEventListener('click',togglePasswordVisibility);
+    if(deleteBtn) deleteBtn.addEventListener('click',confirmDelete);
 });

@@ -1,7 +1,7 @@
-<?php
-    // start session only if not active
-    if(session_status() !== PHP_SESSION_ACTIVE) session_start();
-
+<?php  
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
     // To display errors
     error_reporting(E_ALL);
     ini_set('display_errors', 1);
@@ -23,19 +23,9 @@
     define( "DB_NAME" , getenv('DB_NAME') );
     define( "PASSWORD_ATTEMPT_MAX" , 5 );
     define( "SESSION_TIMEOUT" , 1080 );
-
-    // session variables
-    if (!isset($_SESSION['password_count'])) {
-        $_SESSION['password_count'] = 0;
-    }
-
-    // functions
-    function logout(){
-        session_regenerate_id(true);
-        session_unset();
-        session_destroy();
-        return true;
-    }
+    define( "ERROR_TIMEOUT" , 30 );
+    // global variables
+    $error;
 
     // Making a single pdo objects for entire project
     try {
@@ -46,6 +36,10 @@
         die();
     }
 
+    if( isset($_SESSION['error']) ){
+        
+    }
+
     // Destrory session after $session_timeout duration if last_activity exists AND if user is logged in
     if ( isset($_SESSION['last_activity']) && isset($_SESSION['username']) ) {
         $inactive_time = time() - $_SESSION['last_activity'];
@@ -53,11 +47,9 @@
         if ($inactive_time > SESSION_TIMEOUT) {
             session_unset();
             session_destroy();
-            session_start();
-            $_SESSION['timeout'] = true;
             header("Location: login.php?timeout=true");
             exit;
         }
     }
-    $_SESSION['last_activity'] = time();
+    // $_SESSION['last_activity'] = time();
 ?>

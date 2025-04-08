@@ -1,11 +1,10 @@
 <?php
     require_once "../controllers/auth.php";
-
     // handle user creation
     if( $_SERVER['REQUEST_METHOD'] == 'POST' ){
-        $username = $_POST['username'];
-        $email = $_POST['email'];
-        $password = $_POST['password'];
+        $username = htmlspecialchars($_POST['username']);
+        $email = trim($_POST['email']);
+        $password = trim($_POST['password']);
         $description = !empty($_POST['description']) ? $_POST['description'] : "No description";
         if( validate_form( $username , $email , $password ) ){
             if( create_user( $username , $email , $password , $description ) ){
@@ -14,7 +13,6 @@
                 exit();
             }
         }
-
     }
 ?>
 
@@ -44,12 +42,14 @@
                 <form class="space-y-4 md:space-y-6" action="createUser.php" method="POST">
                     <!-- error messages -->
                     <div>
-                        <?php if (isset($_SESSION['error'])) { echo "<p class='text-red-500'>{$_SESSION['error']}</p>"; } ?>
+                    <?php if( isset($_SESSION['error']) )
+                        echo "<p class='text-red-500'>{$_SESSION['error']}</p>";
+                    ?>
                     </div>
                     <!-- username -->
                     <div>
                         <label for="username" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Username</label>
-                        <input type="text" name="username" id="username" class="signup-inputs" placeholder="Enter username" required="">
+                        <input type="text" name="username" id="username" class="signup-inputs" placeholder="Enter username"  pattern='^[a-zA-Z0-9_-]{3,50}$' required>
                     </div>
                     <!-- email -->
                     <div>
@@ -60,7 +60,7 @@
                     <div>
                         <label class="text-gray-800 dark:text-white text-sm mb-2 block">Password</label>
                         <div class="relative flex items-center">
-                            <input type="password" name="password" id="password" placeholder="••••••••" class="signup-inputs" required="">
+                            <input type="password" name="password" id="password" placeholder="••••••••" class="signup-inputs" pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).{8,}$" required>
 
                             <button type="button" id="togglePasswordView"  class="flex justify-center items-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="#bbb" stroke="#bbb" class=" line-through w-4 h-4 absolute right-4 cursor-pointer" viewBox="0 0 128 128">

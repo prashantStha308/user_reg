@@ -1,41 +1,53 @@
 <?php
-    // ----------------------mis----------------------
-    function bind_param( &$query , $param , &$value ){
-        $query->bindParam( $param , $value );
-    }
-    function bind_value( &$query , $param , &$value ){
-        $query->bindValue( $param , $value );
-    }
-
     // getters
-    function get_data_by_id($user_id, $key) {
+    function get_user_data( $key , $value ){
         global $db;
-        $query = $db->prepare("SELECT {$key} FROM users WHERE user_id = :user_id LIMIT 1");
-        bind_param( $query , ":user_id" , $user_id );
-        $query->execute();
-    
-        if ($query->rowCount() > 0) {
-            $res = $query->fetch(PDO::FETCH_ASSOC);
-            // $res is an associative array
-            return $res[$key];
-        } else {
-            echo "No data found for user_id: {$user_id}";
-            return false;
+        $validKey = ['username' , 'user_id' , 'email'];
+        try{
+            if( !in_array($key , $validKey) ){
+                throw new Exception("Invalid key.");
+            }
+            $query = $db->prepare("SELECT user_id , username , email , description FROM users WHERE {$key} = :value ");
+            $query->bindParam( ":value" , $value );
+            if( $query->execute()){
+                if( $query->rowCount() > 0 ){
+                    $res = $query->fetch(PDO::FETCH_ASSOC);
+                    $data = [
+                        'success' => true,
+                        'data' => $res,
+                        'message' => 'User found'
+                    ];
+                    return $data;
+                }else{
+                throw new Exception("User not found");
+                }
+            }else{
+                throw new Exception("Database error, failed to execute SQL statement");
+            }
+        }catch( Exception $e ){
+            $data = [
+                'success' => false,
+                'data' => null,
+                'message' => 'Error: ' . $e->getMessage()
+            ];
+            return $data;
         }
     }
 
-    function get_data_by_username( $username , $key ){
+    function get_users( $limit = 15, $page = 1 ) {
         global $db;
-        $query = $db->prepare("SELECT {$key} FROM users WHERE username = :username LIMIT 1");
-        bind_param( $query , ":username" , $username );
-        $query->execute();
-    
-        if ($query->rowCount() > 0) {
-            $res = $query->fetch(PDO::FETCH_ASSOC);
-            // $res is an associative array
-            return $res[$key];
-        } else {
-            echo "No data found for username: {$username}";
+        try {
+                $offset = ($page - 1) * $limit;
+                $query = $db->prepare(" SELECT * FROM users LIMIT {$limit} OFFSET {$offset} ");
+                if( $query->execute() ){
+                    $res = $query->fetchAll(PDO::FETCH_ASSOC);
+                    return $res;
+                }else{
+                    throw new Exception("Unexpected error occured while executing SQL statement");
+                }
+        } catch (Exception $e) {
+            global $error;
+            $error = "GetUserError: " . $e->getMessage();
             return false;
         }
     }
@@ -45,6 +57,7 @@
         global $model;
         unset($model);
         unset($_SESSION['error']);
+        unset($_SESSION['error_time']);
     }
 
     function set_model( $title = "Error: " , $message= "Error Message." , $href = null , $btnText = null ){
