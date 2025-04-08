@@ -42,7 +42,7 @@
                 <form class="space-y-4 md:space-y-6" action="createUser.php" method="POST">
                     <!-- error messages -->
                     <div>
-                    <?php if( isset($_SESSION['error']) )
+                    <?php if( isset($_SESSION['error'] ) )
                         echo "<p class='text-red-500'>{$_SESSION['error']}</p>";
                     ?>
                     </div>

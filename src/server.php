@@ -23,11 +23,11 @@
     define( "DB_NAME" , getenv('DB_NAME') );
     define( "PASSWORD_ATTEMPT_MAX" , 5 );
     define( "SESSION_TIMEOUT" , 1080 );
-    define( "ERROR_TIMEOUT" , 30 );
+    define( "ERROR_TIMEOUT" , 15 );
     // global variables
     $error;
 
-    // Making a single pdo objects for entire project
+    //Creating a single database connection for whole project
     try {
         $db = new PDO('mysql:host=' . HOST .';dbname=' . DB_NAME, USER, PASSWORD);
         $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -36,8 +36,13 @@
         die();
     }
 
-    if( isset($_SESSION['error']) ){
-        
+    // remove expired errors
+    if (isset($_SESSION['error']) && isset($_SESSION['error_time'])) {
+        $current_time = time();
+        if ($current_time - $_SESSION['error_time'] > ERROR_TIMEOUT) {
+            unset($_SESSION['error']);
+            unset($_SESSION['error_time']);
+        }
     }
 
     // Destrory session after $session_timeout duration if last_activity exists AND if user is logged in
@@ -45,11 +50,12 @@
         $inactive_time = time() - $_SESSION['last_activity'];
         
         if ($inactive_time > SESSION_TIMEOUT) {
+            session_regenerate_id(true);
             session_unset();
             session_destroy();
             header("Location: login.php?timeout=true");
             exit;
         }
     }
-    // $_SESSION['last_activity'] = time();
+    $_SESSION['last_activity'] = time();
 ?>
