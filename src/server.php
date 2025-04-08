@@ -25,8 +25,6 @@
     define( "PASSWORD_BLOCK_TIMEOUT" , 5 * 60 ); //5 minutes
     define( "SESSION_TIMEOUT" , 30 * 60 ); //30 mins
     define( "ERROR_TIMEOUT" , 5 ); //5 seconds
-    // global variables
-    $error;
 
     //Creating a single database connection for whole project
     try {
