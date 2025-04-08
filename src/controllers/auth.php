@@ -87,6 +87,16 @@
                     $_SESSION['username'] = $user['username'];
                     return true;
                 } else {
+                    if( !isset($_SESSION['password_count']) ){
+                        $_SESSION['password_count'] = 1;
+                    }else{
+                        $_SESSION['password_count'] ++;
+                    }
+                    if( $_SESSION['password_count'] >= PASSWORD_ATTEMPT_MAX ){
+                        $_SESSION['pass_blocked'] = true;
+                        $_SESSION['password_message'] = "Too many failed attemps. You have been blocked for 5 minutes";
+                    }
+                    $_SESSION['password_timestamp'] = time();
                     throw new Exception("Invalid password. Please try again");
                 }
             }else{

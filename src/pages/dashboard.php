@@ -43,7 +43,7 @@
                 header("Location: dashboard.php?username=" . urlencode($username));
                 exit();
             } else {
-                set_model("Invalid parameters", "A user with that username/email already exists. Please pick a different one" , "dashboard.php" , "Back" );
+                header("Location:dashboard.php");
             }
         } else {
             $_SESSION['error'] = "Invalid form data. Please check your inputs.";

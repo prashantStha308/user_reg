@@ -22,8 +22,9 @@
     define( "HOST" , getenv('HOST') );
     define( "DB_NAME" , getenv('DB_NAME') );
     define( "PASSWORD_ATTEMPT_MAX" , 5 );
-    define( "SESSION_TIMEOUT" , 1080 );
-    define( "ERROR_TIMEOUT" , 5 );
+    define( "PASSWORD_BLOCK_TIMEOUT" , 5 * 60 ); //5 minutes
+    define( "SESSION_TIMEOUT" , 30 * 60 ); //30 mins
+    define( "ERROR_TIMEOUT" , 5 ); //5 seconds
     // global variables
     $error;
 
@@ -38,18 +39,25 @@
 
     // remove expired errors
     if (isset($_SESSION['error']) && isset($_SESSION['error_time'])) {
-        $current_time = time();
-        if ($current_time - $_SESSION['error_time'] > ERROR_TIMEOUT) {
+        if (time() - $_SESSION['error_time'] > ERROR_TIMEOUT) {
             unset($_SESSION['error']);
             unset($_SESSION['error_time']);
         }
     }
+    // remove expire password blockage
+    if( isset($_SESSION['password_count']) && isset($_SESSION['password_timestamp']) ){
+        if( time() - $_SESSION['password_timestamp'] > PASSWORD_BLOCK_TIMEOUT ){
+            unset($_SESSION['password_count']);
+            unset($_SESSION['password_timestamp']);
+            unset($_SESSION['password_message']);
+        }
+
+    }
 
     // Destrory session after $session_timeout duration if last_activity exists AND if user is logged in
     if ( isset($_SESSION['last_activity']) && isset($_SESSION['username']) ) {
-        $inactive_time = time() - $_SESSION['last_activity'];
         
-        if ($inactive_time > SESSION_TIMEOUT) {
+        if ( time() - $_SESSION['last_activity'] > SESSION_TIMEOUT) {
             session_regenerate_id(true);
             session_unset();
             session_destroy();
