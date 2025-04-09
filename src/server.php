@@ -6,21 +6,21 @@
     error_reporting(E_ALL);
     ini_set('display_errors', 1);
 
-    // get contents from .env
-    $rootPath = dirname(__DIR__, 1); // Goes up 1 levels from src to root
-    $env = file_get_contents($rootPath."/.env");
-    $lines = explode("\n",$env);
-    // load env variables
-    foreach($lines as $line){
-      preg_match("/([^#]+)\=(.*)/",$line,$matches);
-      if(isset($matches[2])){ putenv(trim($line)); }
-    } 
+    // // get contents from .env
+    // $rootPath = dirname(__DIR__, 1); // Goes up 1 levels from src to root
+    // $env = file_get_contents($rootPath."/.env");
+    // $lines = explode("\n",$env);
+    // // load env variables
+    // foreach($lines as $line){
+    //   preg_match("/([^#]+)\=(.*)/",$line,$matches);
+    //   if(isset($matches[2])){ putenv(trim($line)); }
+    // } 
 
     // constants
-    define( "USER" , getenv('USER') );
-    define( "PASSWORD" , getenv('PASSWORD') );
-    define( "HOST" , getenv('HOST') );
-    define( "DB_NAME" , getenv('DB_NAME') );
+    define( "USER" , 'ur_user' );
+    define( "PASSWORD" , 'user_registration' );
+    define( "HOST" , 'localhost' );
+    define( "DB_NAME" , 'user_management' );
     define( "PASSWORD_ATTEMPT_MAX" , 5 );
     define( "PASSWORD_BLOCK_TIMEOUT" , 5 * 60 ); //5 minutes
     define( "SESSION_TIMEOUT" , 30 * 60 ); //30 mins
@@ -49,7 +49,6 @@
             unset($_SESSION['password_timestamp']);
             unset($_SESSION['password_message']);
         }
-
     }
 
     // Destrory session after $session_timeout duration if last_activity exists AND if user is logged in

@@ -14,7 +14,6 @@
         $password = $_POST['password'];
 
         if( login( $email , $password ) ){
-            session_regenerate_id(true);
             unset_errors();
             header("Location: dashboard.php?username=" . urlencode($_SESSION['username']));
             exit;
