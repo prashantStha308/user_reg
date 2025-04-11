@@ -1,105 +1,67 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // dashboard form elements
-    const dashboardForm = document.getElementById("dashboard_form");
-    const deleteBtn = document.getElementById("deleteBtn")
-    const editBtn = document.getElementById("edit");
-    const cancelEditBtn = document.getElementById("cancelEdit");
-    const finishEditBtn = document.getElementById("finishEdit");
-    const submitBtns = Array.from(document.querySelectorAll("#dashboard_form button[type='submit']"));
-    const inputElements = Array.from(document.querySelectorAll("#dashboard_form input, #dashboard_form textarea"));
+    const $ = selector => document.querySelector(selector);
+    const $$ = selector => Array.from(document.querySelectorAll(selector));
 
-    // password inputs and btns
-    const passInput = document.querySelector("input[type='password']");
-    const toggleBtn = document.getElementById("togglePasswordView");
-    const passLine = document.getElementById("pass-line");
-    const lineThrough = passLine ? passLine.classList : null;
-    // text fields
-    const username = document.querySelector("input[name='username']");
-    const email = document.querySelector("input[name='email']");
-    const description = document.querySelector("textarea[name='description']");
+    const dashboardForm = $("#dashboard_form");
+    const deleteBtn = $("#deleteBtn");
+    const editBtn = $("#edit");
+    const cancelEditBtn = $("#cancelEdit");
+    const finishEditBtn = $("#finishEdit");
+    const submitBtns = $$(`#dashboard_form button[type='submit']`);
+    const inputElements = $$("#dashboard_form input, #dashboard_form textarea");
+    const passInput = $("input[type='password']");
+    const toggleBtn = $("#togglePasswordView");
+    const lineThrough = $("#pass-line")?.classList;
+    const username = $("input[name='username']");
+    const email = $("input[name='email']");
 
-    let uValue , eValue , dValue;
+    let uValue, eValue;
 
-    const toggleInputs = () => {
-        inputElements.forEach(item => {
-            item.readOnly = !item.readOnly;
-        });
-    }
+    const toggleInputs = () => inputElements.forEach(el => el.readOnly = !el.readOnly);
 
-    function handleUpdate() {
-        uValue = username.value;
-        eValue = email.value;
-        dValue = description.value;
+    const toggleBtnVisibility = (editing) => {
+        submitBtns.forEach(btn => btn.classList.toggle("hidden", editing && btn !== finishEditBtn));
+        [editBtn, deleteBtn].forEach(el => el?.classList.toggle("hidden", editing));
+        finishEditBtn.classList.toggle("hidden", !editing);
+        cancelEditBtn.classList.toggle("hidden", !editing);
+    };
+
+    const handleUpdate = () => {
+        [uValue, eValue] = [username.value, email.value];
         toggleInputs();
-        // Hide all submit buttons except Finish Edit
-        submitBtns.forEach(btn => {
-            if (btn !== finishEditBtn) {
-                btn.classList.add("hidden");
-            }
-        });
-        deleteBtn.classList.add('hidden');
+        toggleBtnVisibility(true);
+        inputElements[0]?.focus();
+    };
 
-        // Toggle visibility between Edit and Finish Edit buttons
-        editBtn.classList.add("hidden");
-        finishEditBtn.classList.remove("hidden");
-        cancelEditBtn.classList.remove("hidden");
-
-        if (inputElements.length > 0 && !inputElements[0].readOnly) {
-            inputElements[0].focus();
-        }
-    }
-
-    function cancelEdit(){
-        username.value = uValue;
-        email.value = eValue;
-        description.value = dValue;
+    const cancelEdit = () => {
+        [username.value, email.value] = [uValue, eValue];
         toggleInputs();
-        // Hide all submit buttons except Finish Edit
-        submitBtns.forEach(btn => {
-            if (btn !== finishEditBtn) {
-                btn.classList.remove("hidden");
-            }
+        toggleBtnVisibility(false);
+    };
+
+    const togglePasswordVisibility = () => {
+        if (!passInput) return;
+        const isHidden = passInput.type === 'password';
+        passInput.type = isHidden ? 'text' : 'password';
+        lineThrough?.toggle("hidden", !isHidden);
+    };
+
+    const confirmDelete = () => {
+        if (!confirm("This process is irreversable. Are you sure about this?")) return;
+        const input = Object.assign(document.createElement('input'), {
+            type: 'hidden',
+            name: 'delete',
+            value: '1'
         });
-        deleteBtn.classList.remove('hidden');
+        dashboardForm.appendChild(input);
+        dashboardForm.submit();
+    };
 
-        // Toggle visibility between Edit and Finish Edit buttons
-        editBtn.classList.remove("hidden");
-        finishEditBtn.classList.add("hidden");
-        cancelEditBtn.classList.add("hidden");
+    if (dashboardForm) {
+        editBtn?.addEventListener('click', handleUpdate);
+        cancelEditBtn?.addEventListener('click', cancelEdit);
+        deleteBtn?.addEventListener('click', confirmDelete);
     }
 
-    function togglePasswordVisibility(){
-        console.log("toggleing pass")
-        if( passInput ){
-            const passwordType = passInput.type;
-
-            if (passwordType === 'password') {
-                passInput.type = 'text';
-                lineThrough.remove("hidden");
-            } else {
-                passInput.type = 'password';
-                lineThrough.add("hidden");
-            }
-        }
-    }
-
-    function confirmDelete(){
-        const confirmed = confirm("This process is irreversable. Are you sure about this?");
-
-        if( confirmed ){
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = 'delete';
-            input.value = '1';
-            dashboardForm.appendChild(input);
-            dashboardForm.submit();
-        }
-    }
-
-    if(dashboardForm){
-        editBtn.addEventListener('click', handleUpdate);
-        cancelEditBtn.addEventListener('click',cancelEdit);
-        deleteBtn.addEventListener('click',confirmDelete);
-    }
-    if(toggleBtn) toggleBtn.addEventListener('click',togglePasswordVisibility);
+    toggleBtn?.addEventListener('click', togglePasswordVisibility);
 });

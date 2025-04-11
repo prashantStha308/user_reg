@@ -1,36 +1,7 @@
 <?php
-    require_once "../controllers/auth.php";
-
-    if( isset($_SESSION['username']) ){
-        $_SESSION['error'] = "Cannot perform login when a user is already logged in";
-        $_SESSION['error_time'] = time();
-        header("Location:index.php");        
-        exit();
-    }
-
-    // handle login
-    if( $_SERVER['REQUEST_METHOD'] == 'POST' ) {
-        $email = $_POST['email'];
-        $password = $_POST['password'];
-
-        if( login( $email , $password ) ){
-            unset_errors();
-            header("Location: dashboard.php?username=" . urlencode($_SESSION['username']));
-            exit;
-        }else{
-            $_SESSION['error'] = "Invalid email or passwordn";
-            $_SESSION['error_time'] = time();
-        }
-    }
-
-    function setReadonly(){
-        if( isset($_SESSION['password_blocked']) && $_SESSION['password_blocked'] ){
-            return "readonly";
-        }else{
-            return "";
-        }
-    }
+    require_once "../controllers/_login.php";
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -42,7 +13,7 @@
 </head>
 <body>
     <?php
-        $current_page = "log in";
+        $current_page = "login";
         include "../components/header.php"
     ?>
 

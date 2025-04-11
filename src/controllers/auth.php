@@ -8,14 +8,14 @@
             if( !isset($_SESSION['user_id']) ){
                 throw new Exception("NO user login detected");
             }
-            if( !isset($value) ){
+            if ($value === null || $value === ''){
                 throw new Exception("Value is not set");
             }
             $res = get_user_data($key , $value);
             if ( !$res['success'] || !isset($res['data']['user_id']) ) {
                 throw new Exception($res['message']);
             }
-            $userId = $res['data']['user_id'] ?? null;
+            $userId = $res['data']['user_id'];
             
             if ( $_SESSION['user_id'] !== $userId) {
                 throw new Exception("You are not the owner of this account");
@@ -23,8 +23,7 @@
             
             return true;
         } catch (Exception $e) {
-            $_SESSION['error'] = 'AuthenticationError: ' . $e->getMessage();
-            $_SESSION['error_time'] = time();
+            set_error( 'AuthenticationError' , $e );
             return false;
         }
     }
@@ -34,6 +33,8 @@
         // regexes:
         $pReg = '/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).{8,}$/'; //password
         $uReg = '/^[a-zA-Z0-9 _-]{3,50}$/'; //username
+        $username = trim($username);
+        $email = trim($email);
         try{
             if( empty($username) || empty($email) ){
                 throw new Exception("Required Fields missing");
@@ -60,8 +61,7 @@
     
             return true;
         }catch( Exception $e ){
-            $_SESSION['error'] = 'ValidationError: ' . $e->getMessage();
-            $_SESSION['error_time'] = time();
+            set_error( 'ValidationError' , $e );
             return false;
         }
     }
@@ -86,11 +86,7 @@
                     $_SESSION['username'] = $user['username'];
                     return true;
                 } else {
-                    if( !isset($_SESSION['password_count']) ){
-                        $_SESSION['password_count'] = 1;
-                    }else{
-                        $_SESSION['password_count'] ++;
-                    }
+                    $_SESSION['password_count'] = ($_SESSION['password_count'] ?? 0) + 1;
                     if( $_SESSION['password_count'] >= PASSWORD_ATTEMPT_MAX ){
                         $_SESSION['pass_blocked'] = true;
                         $_SESSION['password_message'] = "Too many failed attemps. You have been blocked for 5 minutes";
@@ -102,14 +98,15 @@
                 throw new Exception("Unregistered email. Try again");
             }
         }catch( Exception $e ){
-            $_SESSION['error'] = 'LoginError: ' . $e->getMessage();
-            $_SESSION['error_time'] = time();
+            set_error( 'LoginError' , $e );
             return false;
         }
     }
 
-    function create_user( $username , $email , $password , $description ){
+    function create_user( $username , $email , $password  ){
         global $db;
+        $username = trim($username);
+        $email = strtolower(trim($username));
         try{
             $getUsername = get_user_data("username", $username);
             $getEmail = get_user_data("email", $email);
@@ -120,26 +117,24 @@
                 throw new Exception("Username already in use. Please use a different username");
             }
             $hashed_password = password_hash($password , PASSWORD_DEFAULT);
-            $query = $db->prepare("INSERT INTO users( username , email , password , description ) VALUES ( :username , :email , :password , :description )");
+            $query = $db->prepare("INSERT INTO users( username , email , password ) VALUES ( :username , :email , :password )");
             $query->bindParam(':username', $username);
             $query->bindParam(':email', $email);
             $query->bindParam(':password', $hashed_password);
-            $query->bindParam(':description', $description);
             if( $query->execute() ){
                 session_regenerate_id(true);
                 return true;
             }else{
-                throw new Exception("Database error: Failed to create user" . var_dump($query->errorInfo()) );
+                throw new Exception("Database error: Failed to create user" . var_export($query->errorInfo() , true) );
             }
             
         }catch( Exception $e ){
-            $_SESSION['error'] = 'UserCreationError: ' . $e->getMessage();
-            $_SESSION['error_time'] = time();
+            set_error( 'UserCreationError' , $e );
             return false;
         }
     }
 
-    function update_user($username, $email, $description) {
+    function update_user($username, $email) {
         global $db;
         try {
             if( !isset($_SESSION['user_id']) ){
@@ -157,11 +152,10 @@
                 throw new Exception("Email already registered. Please choose a different email.");
             }
 
-            $query = $db->prepare("UPDATE users SET username = :username, email = :email, description = :description WHERE user_id = :user_id");
+            $query = $db->prepare("UPDATE users SET username = :username, email = :email WHERE user_id = :user_id");
             $query->bindValue(":user_id", $_SESSION['user_id']);
             $query->bindValue(":username", $username);
             $query->bindValue(":email", $email);
-            $query->bindValue(":description", $description);
     
             if ($query->execute() && $query->rowCount() > 0) {
                 $_SESSION['username'] = $username;
@@ -170,8 +164,7 @@
                 throw new Exception("No records were updated");
             }
         } catch (Exception $e) {
-            $_SESSION['error'] = 'UserUpdateError: ' . $e->getMessage();
-            $_SESSION['error_time'] = time();
+            set_error( 'UserUpdateError' , $e );
             return false;
         }
     }
@@ -192,8 +185,7 @@
             session_destroy();
             return true;
         }catch( Exception $e ){
-            $_SESSION['error'] = 'UserDeletionError: ' . $e->getMessage();
-            $_SESSION['error_time'] = time();
+            set_error( 'UserDeletionError' , $e );
             return false;
         }
     }
@@ -211,8 +203,7 @@
                 return true;
             }
         }catch(Exception $e){
-            $_SESSION['error'] = 'LogoutError: ' . $e->getMessage();
-            $_SESSION['error_time'] = time();
+            set_error( 'LogoutError' , $e );
             return false;
         }
     }

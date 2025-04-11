@@ -34,8 +34,8 @@
             <ul class="sm:grid md:flex items-center justify-between text-base text-gray-700 dark:text-gray-200 pt-4 md:pt-0">
                 <li><a class="list-text <?= is_active("home") ?> " href="index.php">Home</a></li>
                 <li><a class="list-text <?= is_active("dashboard") ?> " href="dashboard.php">Dashboard</a></li>
-                <li><a class="list-text <?= is_active("log in") ?>" href="login.php"> Log in </a></li>
-                <li><a class="list-text <?= is_active("create user") ?> " href="createUser.php"> Create User </a></li>
+                <li><a class="list-text <?= is_active("login") ?>" href="login.php"> Log in </a></li>
+                <li><a class="list-text <?= is_active("register") ?> " href="register.php"> Register </a></li>
             </ul>
         </nav>
     </div>

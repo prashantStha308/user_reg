@@ -1,56 +1,8 @@
 <?php
-    require_once "../controllers/auth.php";
-    // assume user is not guest initialy
-    $isGuest = false;
-    // Sanitize username from GET
-    $username = isset($_GET['username']) ? trim(htmlspecialchars($_GET['username'], ENT_QUOTES, 'UTF-8')) : null;
-    $current_user = isset($_SESSION['username']) ? $_SESSION['username'] : null;
-
-    // handle logout
-    if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['logout'])) {
-        global $username;
-        if ( logout($username) ) {
-            unset_errors();
-            $isGuest = true;
-            header('Location: index.php');
-            exit();
-        }
-    }
-
-    // handle delete account
-    if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete'])) {
-            if (delete_user($username)) {
-                unset_errors();
-                $isGuest = true;
-                header('Location:index.php');
-                exit();
-            }
-    }
-
-    // handle update
-    if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['edit'])) {
-        $username = trim(htmlspecialchars($_POST['username']));
-        $email = trim(htmlspecialchars($_POST['email']));
-        $description = !empty(trim($_POST['description'])) ? $_POST['description'] : "No description";
-        
-        // Validate form data
-        if (validate_form($username, $email)) {
-            // Attempt to update user info
-            $res = update_user($username, $email, $description);
-            if ($res) {
-                unset_errors();
-                // Redirect to the dashboard with the updated username
-                header("Location: dashboard.php?username=" . urlencode($username));
-                exit();
-            } else {
-                header("Location:dashboard.php");
-            }
-        } else {
-            $_SESSION['error'] = "Invalid form data. Please check your inputs.";
-            $_SESSION['error_time'] = time();
-            header("Location: dashboard.php?username=" . urlencode($current_user));
-            exit();
-        }
+    require_once "../controllers/_dashboard.php";
+    if( !isset($_SESSION['username']) ){
+        include "../components/loginReq.php";
+        return;
     }
 ?>
 
@@ -98,7 +50,7 @@
         <div class="min-h-screen grid px-4 mb-4">
             <div
                 class="flex justify-center items-center border border-gray-500 rounded-md bg-black/5 dark:bg-white/5 backdrop-blur-3xl">
-                <!-- main form -->
+                <!-- Main -->
                 <main class="flex-1 p-8">
                     <div class="max-w-3xl mx-auto ">
                         <h1 class="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-200 "><span class="text-purple-500">
@@ -110,12 +62,18 @@
                                 echo "<p class='text-red-500'>{$_SESSION['error']}</p>";
                             ?>
                         </div>
-
+                        <!-- Main form  -->
                         <form id="dashboard_form" method="POST" action="dashboard.php?username=<?= urlencode($username) ?>">
                             <!-- User Id -->
                             <div class="mb-4">
-                                <p for="userId" class="block text-gray-800 dark:text-gray-200 text-sm mb-2">User ID:
+                                <p class="block text-gray-800 dark:text-gray-200 text-sm mb-2">User ID:
                                     <?= htmlspecialchars($userData['user_id']) ?>
+                                </p>
+                            </div>
+                            <!-- created at -->
+                            <div class="mb-4">
+                                <p class="block text-gray-800 dark:text-gray-200 text-sm mb-2">Created at:
+                                    <?= htmlspecialchars(explode( ' ' , $userData['created_at'] )[0] ) ?>
                                 </p>
                             </div>
                             <!-- username -->
@@ -130,13 +88,6 @@
                                 <label for="email" class="block text-gray-800 dark:text-gray-200 text-sm mb-2">Email</label>
                                 <input type="email" name="email" id="email" value="<?= htmlspecialchars($userData['email']) ?>" class="dashboard-inputs" required readonly />
                             </div>
-                            <!-- description -->
-                            <div class="mb-6">
-                                <label for="description"
-                                    class="block text-gray-800 dark:text-gray-200 text-sm mb-2">Description</label>
-                                <textarea id="description" name="description" readonly
-                                    class="dashboard-inputs resize-none"><?= htmlspecialchars($userData['description'] ?? "No description") ?></textarea>
-                            </div>
                             <!-- buttons -->
                             <div class="flex justify-end gap-4">
                                 <?php if (!$isGuest): ?>
@@ -149,7 +100,7 @@
                                     <button type="button" id="cancelEdit"
                                         class="hidden bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"> Cancel Edit
                                     </button>
-                                    <button type="submit" name="logout"
+                                    <button type="submit" name="logout" id="logout"
                                         class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Logout</button>
                                     <button type="button" id="deleteBtn"
                                         class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-800">Delete Account</button>

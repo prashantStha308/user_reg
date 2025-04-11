@@ -1,19 +1,5 @@
 <?php
-    require_once "../controllers/auth.php";
-    // handle user creation
-    if( $_SERVER['REQUEST_METHOD'] == 'POST' ){
-        $username = htmlspecialchars($_POST['username']);
-        $email = trim($_POST['email']);
-        $password = trim($_POST['password']);
-        $description = !empty($_POST['description']) ? $_POST['description'] : "No description";
-        if( validate_form( $username , $email , $password ) ){
-            if( create_user( $username , $email , $password , $description ) ){
-                unset_errors();
-                header("Location:login.php");
-                exit();
-            }
-        }
-    }
+    require_once "../controllers/_register.php";
 ?>
 
 <!DOCTYPE html>
@@ -21,13 +7,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up | User Registration</title>
+    <title>Register User| User Registration</title>
     <link rel="stylesheet" href="../output.css">
 </head>
 <body>
 
     <?php
-        $current_page = "create user";
+        $current_page = "register";
         include "../components/header.php"
     ?>
 
@@ -39,7 +25,7 @@
                 <h1 class="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
                     Create an account
                 </h1>
-                <form class="space-y-4 md:space-y-6" action="createUser.php" method="POST">
+                <form class="space-y-4 md:space-y-6" method="POST">
                     <!-- error messages -->
                     <div>
                     <?php if( isset($_SESSION['error'] ) )
@@ -69,11 +55,6 @@
                                 </svg>
                             </button>
                         </div>
-                    </div>
-                    <!-- description -->
-                    <div>
-                        <label for="description" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Description</label>
-                        <textarea name="description" id="description" placeholder="Describe yourself" class="signup-inputs resize-none "></textarea>
                     </div>
                     <!-- footer -->
                     <button type="submit" class="w-full text text-white bg-purple-600 hover:bg-purple-700  focus:outline-none  font-medium rounded-lg text-sm px-5 py-2.5 text-center  dark:">Create an account</button>

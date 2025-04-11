@@ -1,6 +1,10 @@
 <?php
-    require_once "../controllers/auth.php";;
-    $users = get_users() ?? null;
+    require_once "../controllers/auth.php";
+    if( !isset($_SESSION['username']) ){
+        include "../components/loginReq.php";
+        return;
+    }
+    $users = get_all_users() ?? null;
 ?>
 
 <!DOCTYPE html>

@@ -7,7 +7,7 @@
             if( !in_array($key , $validKey) ){
                 throw new Exception("Invalid key.");
             }
-            $query = $db->prepare("SELECT user_id , username , email , description FROM users WHERE {$key} = :value ");
+            $query = $db->prepare("SELECT user_id , username , email , created_at FROM users WHERE {$key} = :value ");
             $query->bindParam( ":value" , $value );
             if( $query->execute()){
                 if( $query->rowCount() > 0 ){
@@ -34,7 +34,7 @@
         }
     }
 
-    function get_users( $limit = 15, $page = 1 ) {
+    function get_all_users( $limit = 15, $page = 1 ) {
         global $db;
         try {
                 $offset = ($page - 1) * $limit;
@@ -53,6 +53,11 @@
     }
 
     // ----------------------setters----------------------
+    function set_error($prefix, Exception $e) {
+        $_SESSION['error'] = $prefix . ': ' . $e->getMessage();
+        $_SESSION['error_time'] = time();
+    }
+
     function unset_errors(){
         global $model;
         unset($model);

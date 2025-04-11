@@ -1,20 +1,10 @@
-<?php  
-    if (session_status() === PHP_SESSION_NONE) {
+<?php
+    if( session_status() === PHP_SESSION_NONE ){
         session_start();
     }
     // To display errors
     error_reporting(E_ALL);
     ini_set('display_errors', 1);
-
-    // // get contents from .env
-    // $rootPath = dirname(__DIR__, 1); // Goes up 1 levels from src to root
-    // $env = file_get_contents($rootPath."/.env");
-    // $lines = explode("\n",$env);
-    // // load env variables
-    // foreach($lines as $line){
-    //   preg_match("/([^#]+)\=(.*)/",$line,$matches);
-    //   if(isset($matches[2])){ putenv(trim($line)); }
-    // } 
 
     // constants
     define( "USER" , 'ur_user' );
